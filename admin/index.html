@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Inbox | S40 Construction</title>
+    <meta name="description" content="Responsive admin inbox for client messages." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
+    <link href="../assets/css/style.css" rel="stylesheet" />
+    <style>
+      body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f5f7fb 0%, #ebf1f7 100%);
+      }
+      .admin-shell {
+        min-height: 100vh;
+        padding: 2rem 0 3rem;
+      }
+      .admin-card {
+        border-radius: 28px;
+        padding: 1.5rem;
+        background: rgba(255,255,255,0.95);
+        box-shadow: 0 20px 45px rgba(7, 26, 47, 0.16);
+      }
+      .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+      }
+      .admin-header h1 {
+        font-size: clamp(1.5rem, 2.5vw, 2rem);
+        margin: 0;
+        color: var(--navy-dark);
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        padding: .6rem 1rem;
+        border-radius: 999px;
+        background: rgba(201, 162, 39, 0.14);
+        color: var(--gold);
+        font-weight: 600;
+      }
+      .message-list {
+        display: grid;
+        gap: 1rem;
+      }
+      .message-item {
+        border-radius: 20px;
+        border: 1px solid rgba(7, 26, 47, 0.08);
+        background: linear-gradient(135deg, rgba(255,255,255,.96), rgba(248,251,255,.96));
+        padding: 1rem 1.1rem;
+        transition: transform .2s ease, box-shadow .2s ease;
+      }
+      .message-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(7, 26, 47, 0.08);
+      }
+      .message-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: flex-start;
+        margin-bottom: .6rem;
+      }
+      .message-actions {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+      }
+      .action-btn {
+        border: none;
+        border-radius: 999px;
+        padding: .45rem .7rem;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .view-btn {
+        background: rgba(201, 162, 39, 0.14);
+        color: var(--gold);
+      }
+      .delete-btn {
+        background: rgba(220, 53, 69, 0.12);
+        color: #b42318;
+      }
+      .action-btn:hover {
+        transform: translateY(-1px);
+      }
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(3, 17, 31, 0.72);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        z-index: 2000;
+      }
+      .modal-backdrop.open { display: flex; }
+      .modal-card {
+        width: min(680px, 100%);
+        background: #fff;
+        border-radius: 24px;
+        padding: 1.3rem;
+        box-shadow: 0 20px 50px rgba(0,0,0,.25);
+      }
+      .modal-card h3 {
+        margin: 0 0 .6rem;
+        color: var(--navy-dark);
+      }
+      .modal-meta {
+        color: var(--steel);
+        margin-bottom: .8rem;
+        line-height: 1.6;
+      }
+      .modal-body {
+        white-space: pre-wrap;
+        line-height: 1.8;
+        color: var(--navy);
+      }
+      .modal-close {
+        border: none;
+        background: transparent;
+        color: var(--steel);
+        font-size: 1.1rem;
+        cursor: pointer;
+        float: right;
+      }
+      .message-name {
+        font-weight: 700;
+        color: var(--navy-dark);
+      }
+      .message-meta {
+        color: var(--steel);
+        font-size: .9rem;
+      }
+      .empty-state {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: var(--steel);
+        border: 1px dashed rgba(7, 26, 47, 0.14);
+        border-radius: 20px;
+      }
+      .message-body {
+        color: var(--steel);
+        line-height: 1.75;
+        margin-bottom: .5rem;
+      }
+      .message-tags { display: flex; flex-wrap: wrap; gap: .5rem; }
+      .tag {
+        display: inline-flex;
+        padding: .35rem .7rem;
+        border-radius: 999px;
+        background: rgba(201, 162, 39, 0.14);
+        color: var(--gold);
+        font-size: .78rem;
+        font-weight: 600;
+      }
+      @media (max-width: 768px) {
+        .admin-shell { padding: 1rem 0 2rem; }
+        .admin-card { padding: 1rem; border-radius: 20px; }
+        .admin-header { flex-direction: column; align-items: flex-start; }
+        .message-top { flex-direction: column; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="modal-backdrop" id="message-modal">
+      <div class="modal-card">
+        <button class="modal-close" type="button" id="close-modal"><i class="fa-solid fa-xmark"></i></button>
+        <h3 id="modal-title">Message</h3>
+        <div class="modal-meta" id="modal-meta"></div>
+        <div class="modal-body" id="modal-body"></div>
+      </div>
+    </div>
+
+    <div class="admin-shell">
+      <div class="container">
+        <div class="admin-card">
+          <div class="admin-header">
+            <div>
+              <div class="eyebrow">Admin Dashboard</div>
+              <h1>Client Messages Inbox</h1>
+            </div>
+            <div class="pill"><i class="fa-solid fa-envelope"></i><span id="message-count">0 new messages</span></div>
+          </div>
+          <div id="message-list" class="message-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../assets/js/main.js"></script>
+    <script>
+      const storageKey = 's40-client-messages';
+      const list = document.getElementById('message-list');
+      const countBadge = document.getElementById('message-count');
+
+      function formatDate(iso) {
+        return new Date(iso).toLocaleString([], {
+          dateStyle: 'medium',
+          timeStyle: 'short'
+        });
+      }
+
+      function renderMessages() {
+        const messages = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        countBadge.textContent = `${messages.length} ${messages.length === 1 ? 'message' : 'messages'}`;
+
+        if (!messages.length) {
+          list.innerHTML = '<div class="empty-state"><i class="fa-solid fa-inbox"></i><p>No client messages yet.</p></div>';
+          return;
+        }
+
+        list.innerHTML = messages.map(message => `
+          <article class="message-item">
+            <div class="message-top">
+              <div>
+                <div class="message-name">${message.name}</div>
+                <div class="message-meta">${message.email || 'No email provided'} • ${message.phone || 'No phone provided'}</div>
+              </div>
+              <div class="message-actions">
+                <div class="message-meta">${formatDate(message.sentAt)}</div>
+                <button class="action-btn view-btn" type="button" data-action="view" data-id="${message.id}"><i class="fa-solid fa-eye"></i> View</button>
+                <button class="action-btn delete-btn" type="button" data-action="delete" data-id="${message.id}"><i class="fa-solid fa-trash"></i> Delete</button>
+              </div>
+            </div>
+            <div class="message-tags">
+              <span class="tag">${message.subject || 'New inquiry'}</span>
+            </div>
+            <p class="message-body">${message.message || 'No message content provided.'}</p>
+          </article>
+        `).join('');
+      }
+
+      const modal = document.getElementById('message-modal');
+      const modalTitle = document.getElementById('modal-title');
+      const modalMeta = document.getElementById('modal-meta');
+      const modalBody = document.getElementById('modal-body');
+      const closeModalBtn = document.getElementById('close-modal');
+
+      function deleteMessage(id) {
+        const messages = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const updated = messages.filter(message => message.id !== id);
+        localStorage.setItem(storageKey, JSON.stringify(updated));
+        renderMessages();
+      }
+
+      function openMessage(id) {
+        const messages = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const message = messages.find(entry => entry.id === id);
+        if (!message) return;
+
+        modalTitle.textContent = message.subject || 'New inquiry';
+        modalMeta.innerHTML = `<strong>${message.name}</strong><br>${message.email || 'No email provided'} • ${message.phone || 'No phone provided'}<br>${new Date(message.sentAt).toLocaleString()}`;
+        modalBody.textContent = message.message || 'No message content provided.';
+        modal.classList.add('open');
+      }
+
+      list.addEventListener('click', event => {
+        const button = event.target.closest('.action-btn');
+        if (!button) return;
+
+        const id = button.getAttribute('data-id');
+        if (button.getAttribute('data-action') === 'delete') {
+          deleteMessage(id);
+        } else {
+          openMessage(id);
+        }
+      });
+
+      closeModalBtn.addEventListener('click', () => modal.classList.remove('open'));
+      modal.addEventListener('click', event => {
+        if (event.target === modal) modal.classList.remove('open');
+      });
+
+      window.addEventListener('s40:messages-updated', renderMessages);
+      window.addEventListener('storage', event => {
+        if (event.key === storageKey) renderMessages();
+      });
+      renderMessages();
+    </script>
+  </body>
+</html>

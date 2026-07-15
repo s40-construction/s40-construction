@@ -142,6 +142,8 @@ body:not(.cursor-enabled) .cursor-dot, body:not(.cursor-enabled) .cursor-outline
 .form-control { width: 100%; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(7,26,47,.12); background: rgba(255,255,255,.88); margin-bottom: 1rem; font-family: inherit; }
 .form-control:focus { outline: 2px solid rgba(201,162,39,.22); border-color: rgba(201,162,39,.45); }
 textarea.form-control { min-height: 140px; resize: vertical; }
+.form-feedback { display: none; margin-bottom: 1rem; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(201,162,39,.25); background: rgba(201,162,39,.12); color: var(--navy-dark); font-weight: 600; line-height: 1.6; }
+.form-feedback.show { display: block; }
 
 .footer { padding: 60px 0 30px; background: linear-gradient(135deg, var(--navy-dark), var(--navy)); color: rgba(255,255,255,.8); }
 .footer .container { display: grid; grid-template-columns: 1.2fr .8fr .8fr; gap: 2rem; }

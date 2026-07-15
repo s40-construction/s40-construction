@@ -115,6 +115,40 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', e => {
       e.preventDefault();
       const button = form.querySelector('button[type="submit"]');
+      const fields = {
+        name: form.querySelector('[name="name"]'),
+        email: form.querySelector('[name="email"]'),
+        phone: form.querySelector('[name="phone"]'),
+        subject: form.querySelector('[name="subject"]'),
+        message: form.querySelector('[name="message"]')
+      };
+
+      const payload = {
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        name: fields.name?.value.trim() || 'Client',
+        email: fields.email?.value.trim() || '',
+        phone: fields.phone?.value.trim() || '',
+        subject: fields.subject?.value.trim() || 'New inquiry',
+        message: fields.message?.value.trim() || '',
+        sentAt: new Date().toISOString()
+      };
+
+      try {
+        const existing = JSON.parse(localStorage.getItem('s40-client-messages') || '[]');
+        existing.unshift(payload);
+        localStorage.setItem('s40-client-messages', JSON.stringify(existing));
+        window.dispatchEvent(new CustomEvent('s40:messages-updated', { detail: payload }));
+      } catch (error) {
+        console.error('Unable to save message', error);
+      }
+
+      let feedback = form.querySelector('.form-feedback');
+      if (!feedback) {
+        feedback = document.createElement('div');
+        feedback.className = 'form-feedback';
+        form.insertBefore(feedback, form.querySelector('button[type="submit"]'));
+      }
+
       if (button) {
         button.textContent = 'Message Sent';
         button.disabled = true;
@@ -125,7 +159,8 @@ document.addEventListener('DOMContentLoaded', () => {
           button.disabled = false;
         }
         form.reset();
-        alert('Thank you. We will be in touch shortly.');
+        feedback.innerHTML = '<i class="fa-solid fa-check-circle" style="margin-right: .5rem;"></i>Thank you for reaching out. Please wait for our reply through email or phone call.';
+        feedback.classList.add('show');
       }, 1200);
     });
   }
