@@ -1,0 +1,20 @@
+.navbar-toggler { display: none; }
+
+@media (max-width: 992px) {
+  .hero .container, .about-intro, .contact-grid { grid-template-columns: 1fr; }
+  .service-grid, .project-grid, .cert-grid, .counter-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .footer .container { grid-template-columns: 1fr 1fr; }
+  .navbar-nav { display: none; position: absolute; top: 110%; right: 1rem; background: rgba(7,26,47,.96); padding: 1rem 1.2rem; border-radius: 16px; flex-direction: column; min-width: 220px; box-shadow: var(--shadow); }
+  .navbar-nav.open { display: flex; }
+  .navbar-toggler { display: inline-flex; }
+}
+
+@media (max-width: 768px) {
+  section { padding: 80px 0; }
+  .hero { min-height: auto; padding: 140px 0 90px; }
+  .hero-card { margin-top: 1.5rem; }
+  .service-grid, .project-grid, .cert-grid, .counter-row, .footer .container { grid-template-columns: 1fr; }
+  .gallery-grid { columns: 1; }
+  .footer-bottom { flex-direction: column; gap: .5rem; }
+  .page-hero { padding-top: 120px; }
+}
