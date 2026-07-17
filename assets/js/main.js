@@ -82,6 +82,46 @@ const loadMessagesFromSharedInbox = async (callback) => {
 window.saveMessageToSharedInbox = saveMessageToSharedInbox;
 window.loadMessagesFromSharedInbox = loadMessagesFromSharedInbox;
 
+const showFloatingNotice = (message, timeout = 3000) => {
+  let notice = document.querySelector('.contact-success-notice');
+  if (!notice) {
+    notice = document.createElement('div');
+    notice.className = 'contact-success-notice';
+    document.body.insertBefore(notice, document.body.firstChild);
+  }
+
+  notice.innerHTML = `<i class="fa-solid fa-check-circle" style="margin-right: .6rem;"></i>${message}`;
+  notice.classList.remove('show');
+  requestAnimationFrame(() => notice.classList.add('show'));
+
+  window.clearTimeout(window.contactNoticeTimeout);
+  window.contactNoticeTimeout = window.setTimeout(() => {
+    notice.classList.remove('show');
+    window.setTimeout(() => {
+      notice.remove();
+    }, 250);
+  }, timeout);
+};
+
+const setPendingNotice = (message) => {
+  try {
+    sessionStorage.setItem('s40-contact-success', message);
+  } catch (error) {
+    console.warn('Unable to store notice', error);
+  }
+};
+
+const consumePendingNotice = () => {
+  try {
+    const message = sessionStorage.getItem('s40-contact-success');
+    sessionStorage.removeItem('s40-contact-success');
+    return message || '';
+  } catch (error) {
+    console.warn('Unable to read notice', error);
+    return '';
+  }
+};
+
 window.addEventListener('DOMContentLoaded', () => {
   const loadingScreen = document.querySelector('.loading-screen');
   if (loadingScreen) {
@@ -179,6 +219,11 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   document.body.classList.add('page-ready');
+
+  const pendingNotice = consumePendingNotice();
+  if (pendingNotice) {
+    showFloatingNotice(pendingNotice);
+  }
 
   const revealElements = document.querySelectorAll('.reveal');
   const observer = new IntersectionObserver(entries => {
@@ -279,26 +324,19 @@ window.addEventListener('DOMContentLoaded', () => {
         console.error('Unable to save message', error);
       }
 
-      let feedback = form.querySelector('.form-feedback');
-      if (!feedback) {
-        feedback = document.createElement('div');
-        feedback.className = 'form-feedback';
-        form.insertBefore(feedback, form.querySelector('button[type="submit"]'));
-      }
+      const successMessage = 'Thank you for reaching out. Please wait for our reply through email or phone call.';
 
       if (button) {
         button.textContent = 'Message Sent';
         button.disabled = true;
       }
-      setTimeout(() => {
-        if (button) {
-          button.textContent = 'Send Message';
-          button.disabled = false;
-        }
-        form.reset();
-        feedback.innerHTML = '<i class="fa-solid fa-check-circle" style="margin-right: .5rem;"></i>Thank you for reaching out. Please wait for our reply through email or phone call.';
-        feedback.classList.add('show');
-      }, 1200);
+
+      form.reset();
+      setPendingNotice(successMessage);
+
+      window.setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 300);
     });
   }
 
