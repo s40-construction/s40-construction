@@ -1,4 +1,88 @@
-document.addEventListener('DOMContentLoaded', () => {
+const firebaseConfig = {
+  apiKey: "AIzaSyBcK_rVtBPoMLsDXx72m6sMx8g7cnqX8dM",
+  authDomain: "markkeneth-b741d.firebaseapp.com",
+  databaseURL: "https://markkeneth-b741d-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "markkeneth-b741d",
+  storageBucket: "markkeneth-b741d.firebasestorage.app",
+  messagingSenderId: "1052351561410",
+  appId: "1:1052351561410:web:c471dcd2aa88a39027455b"
+};
+
+const isFirebaseConfigured = () => {
+  const hasValue = value => typeof value === 'string' && value && !value.includes('YOUR_');
+  return hasValue(firebaseConfig.apiKey) && hasValue(firebaseConfig.databaseURL) && hasValue(firebaseConfig.projectId);
+};
+
+let firebaseDatabase = null;
+let firebaseReady = false;
+
+const initFirebase = () => {
+  if (!isFirebaseConfigured() || firebaseReady || !window.firebase) return false;
+  try {
+    if (!window.firebase.apps.length) {
+      window.firebase.initializeApp(firebaseConfig);
+    }
+    firebaseDatabase = window.firebase.database();
+    firebaseReady = true;
+    return true;
+  } catch (error) {
+    console.warn('Firebase initialization skipped', error);
+    return false;
+  }
+};
+
+const getStoredMessages = () => {
+  try {
+    return JSON.parse(localStorage.getItem('s40-client-messages') || '[]');
+  } catch (error) {
+    return [];
+  }
+};
+
+const saveStoredMessages = (messages) => {
+  localStorage.setItem('s40-client-messages', JSON.stringify(messages));
+  window.dispatchEvent(new CustomEvent('s40:messages-updated', { detail: messages[0] || null }));
+};
+
+const saveMessageToSharedInbox = (payload) => {
+  const existing = getStoredMessages();
+  existing.unshift(payload);
+  saveStoredMessages(existing);
+
+  if (initFirebase()) {
+    firebaseDatabase.ref('messages').push(payload).catch(error => {
+      console.warn('Unable to sync message to Firebase', error);
+    });
+  }
+};
+
+const loadMessagesFromSharedInbox = async (callback) => {
+  const localMessages = getStoredMessages();
+  if (callback) callback(localMessages);
+
+  if (!initFirebase()) return;
+
+  try {
+    const snapshot = await firebaseDatabase.ref('messages').orderByChild('sentAt').once('value');
+    const remoteMessages = [];
+    snapshot.forEach(child => {
+      remoteMessages.push({ id: child.key, ...child.val() });
+    });
+    remoteMessages.sort((a, b) => new Date(b.sentAt || 0) - new Date(a.sentAt || 0));
+
+    if (remoteMessages.length) {
+      saveStoredMessages(remoteMessages);
+      if (callback) callback(remoteMessages);
+    }
+  } catch (error) {
+    console.warn('Unable to load messages from Firebase', error);
+  }
+};
+
+window.saveMessageToSharedInbox = saveMessageToSharedInbox;
+window.loadMessagesFromSharedInbox = loadMessagesFromSharedInbox;
+
+window.addEventListener('DOMContentLoaded', () => {
   const loadingScreen = document.querySelector('.loading-screen');
   if (loadingScreen) {
     window.addEventListener('load', () => {
@@ -190,10 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       try {
-        const existing = JSON.parse(localStorage.getItem('s40-client-messages') || '[]');
-        existing.unshift(payload);
-        localStorage.setItem('s40-client-messages', JSON.stringify(existing));
-        window.dispatchEvent(new CustomEvent('s40:messages-updated', { detail: payload }));
+        saveMessageToSharedInbox(payload);
       } catch (error) {
         console.error('Unable to save message', error);
       }

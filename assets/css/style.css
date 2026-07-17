@@ -67,6 +67,20 @@ body:not(.cursor-enabled) .cursor-dot, body:not(.cursor-enabled) .cursor-outline
 .navbar-nav a.active::after, .navbar-nav a:hover::after { width: 100%; }
 .navbar-toggler { display: none; background: transparent; border: none; color: var(--white); font-size: 1.35rem; }
 
+/* Keep navbar links horizontal on all pages (desktop). */
+@media (min-width: 0px) {
+  .navbar-nav {
+    flex-direction: row;
+    align-items: center;
+  }
+  .navbar-nav a {
+    width: auto;
+    padding: 0;
+    border-bottom: none;
+  }
+}
+
+
 .hero {
   min-height: 0; padding: 5rem 0 3rem; display: grid; align-items: center; position: relative; color: var(--white); overflow: hidden;
   background: linear-gradient(120deg, rgba(3,17,31,.88), rgba(7,26,47,.62));
@@ -91,7 +105,23 @@ body:not(.cursor-enabled) .cursor-dot, body:not(.cursor-enabled) .cursor-outline
 .scroll-indicator span { width: 24px; height: 40px; border: 2px solid rgba(255,255,255,.7); border-radius: 999px; position: relative; }
 .scroll-indicator span::before { content: ''; position: absolute; left: 50%; top: 8px; width: 4px; height: 8px; background: var(--gold); transform: translateX(-50%); border-radius: 2px; animation: scrollDown 1.2s infinite; }
 
-.about-section, .services-section, .projects-section, .gallery-section, .certifications-section, .contact-section { background: transparent; }
+/* Match about.html page background behavior on homepage sections */
+.about-section,
+.services-section,
+.projects-section,
+.gallery-section,
+.certifications-section,
+.contact-section {
+  background: transparent;
+}
+
+
+
+
+
+
+
+
 .about-intro { display: grid; grid-template-columns: 1.1fr .9fr; gap: 2rem; align-items: center; }
 .about-card { padding: 2rem; border-radius: var(--radius); }
 .about-card h3 { font-size: 1.5rem; margin-bottom: 1rem; }

@@ -1,0 +1,63 @@
+/* About page overrides (navbar should stay horizontal & not block scroll) */
+
+/* Force horizontal nav for About page so it doesn't turn vertical/fixed and block scroll */
+@media (min-width: 768px) {
+
+  .navbar-nav {
+    position: static !important;
+    inset: auto !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: auto !important;
+    height: auto !important;
+    background: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    flex-direction: row !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    pointer-events: auto !important;
+    z-index: auto !important;
+    display: flex !important;
+    gap: 1.2rem !important;
+  }
+
+  .navbar-nav a {
+    width: auto !important;
+    padding: 0 !important;
+    font-size: inherit !important;
+    border-bottom: none !important;
+  }
+}
+
+/* Match other pages: restore dark-blue hero treatment for About page */
+header.page-hero {
+  background: linear-gradient(120deg, rgba(3,17,31,.95), rgba(7,26,47,.8)) !important;
+  color: #f8fbff !important;
+}
+
+/* About page background and navbar styling */
+body {
+  background: #f2f2f2 !important;
+}
+
+.page-content {
+  background: #f2f2f2 !important;
+}
+
+.navbar,
+.navbar.scrolled {
+  background: #071a2f !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.16) !important;
+}
+
+.navbar .navbar-nav a {
+  color: rgba(255,255,255,.9) !important;
+}
+
+

@@ -10,15 +10,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
     <link href="../assets/css/style.css" rel="stylesheet" />
-    <style>
+    <link href="../assets/css/admin.css" rel="stylesheet" />
+      <style>
       body {
         min-height: 100vh;
-        background: linear-gradient(135deg, #f5f7fb 0%, #ebf1f7 100%);
       }
       .admin-shell {
         min-height: 100vh;
         padding: 2rem 0 3rem;
       }
+
       .admin-card {
         border-radius: 28px;
         padding: 1.5rem;
@@ -74,63 +75,17 @@
         align-items: center;
         gap: .5rem;
       }
-      .action-btn {
+      .delete-btn {
         border: none;
+        background: rgba(220, 53, 69, 0.12);
+        color: #b42318;
         border-radius: 999px;
         padding: .45rem .7rem;
         cursor: pointer;
         font-weight: 600;
       }
-      .view-btn {
-        background: rgba(201, 162, 39, 0.14);
-        color: var(--gold);
-      }
-      .delete-btn {
-        background: rgba(220, 53, 69, 0.12);
-        color: #b42318;
-      }
-      .action-btn:hover {
-        transform: translateY(-1px);
-      }
-      .modal-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(3, 17, 31, 0.72);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem;
-        z-index: 2000;
-      }
-      .modal-backdrop.open { display: flex; }
-      .modal-card {
-        width: min(680px, 100%);
-        background: #fff;
-        border-radius: 24px;
-        padding: 1.3rem;
-        box-shadow: 0 20px 50px rgba(0,0,0,.25);
-      }
-      .modal-card h3 {
-        margin: 0 0 .6rem;
-        color: var(--navy-dark);
-      }
-      .modal-meta {
-        color: var(--steel);
-        margin-bottom: .8rem;
-        line-height: 1.6;
-      }
-      .modal-body {
-        white-space: pre-wrap;
-        line-height: 1.8;
-        color: var(--navy);
-      }
-      .modal-close {
-        border: none;
-        background: transparent;
-        color: var(--steel);
-        font-size: 1.1rem;
-        cursor: pointer;
-        float: right;
+      .delete-btn:hover {
+        background: rgba(220, 53, 69, 0.2);
       }
       .message-name {
         font-weight: 700;
@@ -171,18 +126,15 @@
     </style>
   </head>
   <body>
-    <div class="modal-backdrop" id="message-modal">
-      <div class="modal-card">
-        <button class="modal-close" type="button" id="close-modal"><i class="fa-solid fa-xmark"></i></button>
-        <h3 id="modal-title">Message</h3>
-        <div class="modal-meta" id="modal-meta"></div>
-        <div class="modal-body" id="modal-body"></div>
-      </div>
+    <div class="admin-bg-live" aria-hidden="true">
+      <div class="bg-overlay"></div>
+      <canvas id="admin-bg-canvas"></canvas>
     </div>
 
     <div class="admin-shell">
       <div class="container">
         <div class="admin-card">
+
           <div class="admin-header">
             <div>
               <div class="eyebrow">Admin Dashboard</div>
@@ -195,8 +147,123 @@
       </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
     <script src="../assets/js/main.js"></script>
     <script>
+      // Live admin background particles
+      (function initAdminParticles() {
+        const canvas = document.getElementById('admin-bg-canvas');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        let width = 0;
+        let height = 0;
+
+        const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+        const config = {
+          particleCount: prefersReduced ? 20 : 70,
+          linkDistance: 110,
+          speed: prefersReduced ? 0.15 : 0.35,
+          maxRadius: prefersReduced ? 2.2 : 3.2,
+          minRadius: 0.8,
+          bgFade: 0.18
+        };
+
+        let particles = [];
+        let rafId = null;
+
+        const rand = (min, max) => Math.random() * (max - min) + min;
+
+        const resize = () => {
+          const rect = canvas.getBoundingClientRect();
+          width = Math.max(1, Math.floor(rect.width));
+          height = Math.max(1, Math.floor(rect.height));
+          canvas.width = Math.floor(width * DPR);
+          canvas.height = Math.floor(height * DPR);
+          canvas.style.width = width + 'px';
+          canvas.style.height = height + 'px';
+          ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+          // rebuild particles on resize
+          particles = Array.from({ length: config.particleCount }, () => ({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - 0.5) * config.speed,
+            vy: (Math.random() - 0.5) * config.speed,
+            r: rand(config.minRadius, config.maxRadius)
+          }));
+        };
+
+        const draw = () => {
+          // clear with transparency for smoother trails
+          ctx.fillStyle = `rgba(7, 26, 47, ${config.bgFade})`;
+          ctx.fillRect(0, 0, width, height);
+
+          // particles
+          for (const p of particles) {
+            p.x += p.vx;
+            p.y += p.vy;
+
+            if (p.x < -10) p.x = width + 10;
+            if (p.x > width + 10) p.x = -10;
+            if (p.y < -10) p.y = height + 10;
+            if (p.y > height + 10) p.y = -10;
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(201,162,39,.35)';
+            ctx.fill();
+          }
+
+          // links
+          ctx.lineWidth = 1;
+          for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+              const a = particles[i];
+              const b = particles[j];
+              const dx = a.x - b.x;
+              const dy = a.y - b.y;
+              const dist = Math.hypot(dx, dy);
+              if (dist < config.linkDistance) {
+                const alpha = 1 - dist / config.linkDistance;
+                ctx.strokeStyle = `rgba(255,255,255,${0.16 * alpha})`;
+                ctx.beginPath();
+                ctx.moveTo(a.x, a.y);
+                ctx.lineTo(b.x, b.y);
+                ctx.stroke();
+              }
+            }
+          }
+
+          rafId = requestAnimationFrame(draw);
+        };
+
+        const start = () => {
+          resize();
+          if (!prefersReduced) {
+            rafId = requestAnimationFrame(draw);
+          } else {
+            // single frame for reduced motion
+            draw();
+            if (rafId) cancelAnimationFrame(rafId);
+          }
+        };
+
+        let resizeTimer = null;
+        window.addEventListener('resize', () => {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(() => {
+            if (rafId) cancelAnimationFrame(rafId);
+            start();
+          }, 150);
+        });
+
+        start();
+      })();
+
       const storageKey = 's40-client-messages';
       const list = document.getElementById('message-list');
       const countBadge = document.getElementById('message-count');
@@ -226,8 +293,7 @@
               </div>
               <div class="message-actions">
                 <div class="message-meta">${formatDate(message.sentAt)}</div>
-                <button class="action-btn view-btn" type="button" data-action="view" data-id="${message.id}"><i class="fa-solid fa-eye"></i> View</button>
-                <button class="action-btn delete-btn" type="button" data-action="delete" data-id="${message.id}"><i class="fa-solid fa-trash"></i> Delete</button>
+                <button class="delete-btn" type="button" data-id="${message.id}"><i class="fa-solid fa-trash"></i> Delete</button>
               </div>
             </div>
             <div class="message-tags">
@@ -238,12 +304,6 @@
         `).join('');
       }
 
-      const modal = document.getElementById('message-modal');
-      const modalTitle = document.getElementById('modal-title');
-      const modalMeta = document.getElementById('modal-meta');
-      const modalBody = document.getElementById('modal-body');
-      const closeModalBtn = document.getElementById('close-modal');
-
       function deleteMessage(id) {
         const messages = JSON.parse(localStorage.getItem(storageKey) || '[]');
         const updated = messages.filter(message => message.id !== id);
@@ -251,39 +311,21 @@
         renderMessages();
       }
 
-      function openMessage(id) {
-        const messages = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        const message = messages.find(entry => entry.id === id);
-        if (!message) return;
-
-        modalTitle.textContent = message.subject || 'New inquiry';
-        modalMeta.innerHTML = `<strong>${message.name}</strong><br>${message.email || 'No email provided'} • ${message.phone || 'No phone provided'}<br>${new Date(message.sentAt).toLocaleString()}`;
-        modalBody.textContent = message.message || 'No message content provided.';
-        modal.classList.add('open');
-      }
-
       list.addEventListener('click', event => {
-        const button = event.target.closest('.action-btn');
+        const button = event.target.closest('.delete-btn');
         if (!button) return;
-
-        const id = button.getAttribute('data-id');
-        if (button.getAttribute('data-action') === 'delete') {
-          deleteMessage(id);
-        } else {
-          openMessage(id);
-        }
-      });
-
-      closeModalBtn.addEventListener('click', () => modal.classList.remove('open'));
-      modal.addEventListener('click', event => {
-        if (event.target === modal) modal.classList.remove('open');
+        deleteMessage(button.getAttribute('data-id'));
       });
 
       window.addEventListener('s40:messages-updated', renderMessages);
       window.addEventListener('storage', event => {
         if (event.key === storageKey) renderMessages();
       });
-      renderMessages();
+      if (window.loadMessagesFromSharedInbox) {
+        window.loadMessagesFromSharedInbox(renderMessages);
+      } else {
+        renderMessages();
+      }
     </script>
   </body>
 </html>

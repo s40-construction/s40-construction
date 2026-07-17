@@ -1,0 +1,315 @@
+[33mcommit 3578b5237db2eca817d850aae340efad1a4e4dd5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: Mark Keneth Bonquin <YOUR_GITHUB_EMAIL@gmail.com>
+Date:   Fri Jul 17 10:51:59 2026 +0800
+
+    Update navbar and layout improvements
+
+[1mdiff --git a/assets/css/responsive.css b/assets/css/responsive.css[m
+[1mindex 0aba9ec..ef942ab 100644[m
+[1m--- a/assets/css/responsive.css[m
+[1m+++ b/assets/css/responsive.css[m
+[36m@@ -1,12 +1,58 @@[m
+ .navbar-toggler { display: none; }[m
+ [m
+[32m+[m[32mbody.menu-open {[m
+[32m+[m[32m  overflow: hidden;[m
+[32m+[m[32m}[m
+[32m+[m
+ @media (max-width: 992px) {[m
+   .hero .container, .about-intro, .contact-grid { grid-template-columns: 1fr; }[m
+   .service-grid, .project-grid, .cert-grid, .counter-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }[m
+   .footer .container { grid-template-columns: 1fr 1fr; }[m
+[31m-  .navbar-nav { display: none; position: absolute; top: 110%; right: 1rem; background: rgba(7,26,47,.96); padding: 1rem 1.2rem; border-radius: 16px; flex-direction: column; min-width: 220px; box-shadow: var(--shadow); }[m
+[31m-  .navbar-nav.open { display: flex; }[m
+[31m-  .navbar-toggler { display: inline-flex; }[m
+[32m+[m[32m  .navbar-nav {[m
+[32m+[m[32m    display: flex;[m
+[32m+[m[32m    position: fixed;[m
+[32m+[m[32m    inset: 0;[m
+[32m+[m[32m    top: 0;[m
+[32m+[m[32m    left: 0;[m
+[32m+[m[32m    right: 0;[m
+[32m+[m[32m    bottom: 0;[m
+[32m+[m[32m    width: 100%;[m
+[32m+[m[32m    height: 100vh;[m
+[32m+[m[32m    background: rgba(7,26,47,.98);[m
+[32m+[m[32m    padding: 6rem 1.5rem 2rem;[m
+[32m+[m[32m    border-radius: 0;[m
+[32m+[m[32m    flex-direction: column;[m
+[32m+[m[32m    justify-content: center;[m
+[32m+[m[32m    align-items: flex-start;[m
+[32m+[m[32m    gap: 0;[m
+[32m+[m[32m    box-shadow: none;[m
+[32m+[m[32m    opacity: 0;[m
+[32m+[m[32m    visibility: hidden;[m
+[32m+[m[32m    transform: translateY(-10px);[m
+[32m+[m[32m    transition: opacity .3s ease, transform .3s ease, visibility .3s ease;[m
+[32m+[m[32m    pointer-events: none;[m
+[32m+[m[32m    z-index: 1100;[m
+[32m+[m[32m  }[m
+[32m+[m[32m  .navbar-nav.open {[m
+[32m+[m[32m    opacity: 1;[m
+[32m+[m[32m    visibility: visible;[m
+[32m+[m[32m    transform: translateY(0);[m
+[32m+[m[32m    pointer-events: auto;[m
+[32m+[m[32m  }[m
+[32m+[m[32m  .navbar-nav a {[m
+[32m+[m[32m    width: 100%;[m
+[32m+[m[32m    padding: 1rem 0;[m
+[32m+[m[32m    font-size: 1.05rem;[m
+[32m+[m[32m    border-bottom: 1px solid rgba(255,255,255,.12);[m
+[32m+[m[32m  }[m
+[32m+[m[32m  .navbar-nav a:last-child {[m
+[32m+[m[32m    border-bottom: none;[m
+[32m+[m[32m  }[m
+[32m+[m[32m  .navbar-toggler {[m
+[32m+[m[32m    display: inline-flex;[m
+[32m+[m[32m    position: relative;[m
+[32m+[m[32m    z-index: 1200;[m
+[32m+[m[32m  }[m
+ }[m
+ [m
+ @media (max-width: 768px) {[m
+[36m@@ -16,5 +62,5 @@[m
+   .service-grid, .project-grid, .cert-grid, .counter-row, .footer .container { grid-template-columns: 1fr; }[m
+   .gallery-grid { columns: 1; }[m
+   .footer-bottom { flex-direction: column; gap: .5rem; }[m
+[31m-  .page-hero { padding-top: 120px; }[m
+[32m+[m[32m  .page-hero { padding-top: 2rem; }[m
+ }[m
+[1mdiff --git a/assets/css/style.css b/assets/css/style.css[m
+[1mindex b3210de..c98c3d8 100644[m
+[1m--- a/assets/css/style.css[m
+[1m+++ b/assets/css/style.css[m
+[36m@@ -18,7 +18,11 @@[m [mbody {[m
+   background: linear-gradient(135deg, #f5f7fb 0%, #ebf1f7 100%);[m
+   color: var(--navy);[m
+   overflow-x: hidden;[m
+[32m+[m[32m  opacity: 0;[m
+[32m+[m[32m  transition: opacity .35s ease;[m
+ }[m
+[32m+[m[32mbody.page-ready { opacity: 1; }[m
+[32m+[m[32mbody.page-transitioning { opacity: 0; }[m
+ body.cursor-enabled { cursor: none; }[m
+ a { text-decoration: none; color: inherit; }[m
+ img { max-width: 100%; display: block; }[m
+[36m@@ -49,21 +53,22 @@[m [mbody.cursor-enabled .cursor-dot, body.cursor-enabled .cursor-outline { opacity:[m
+ body:not(.cursor-enabled) .cursor-dot, body:not(.cursor-enabled) .cursor-outline { opacity: 0; }[m
+ [m
+ .navbar {[m
+[31m-  position: fixed; top: 0; width: 100%; z-index: 1000; padding: 1rem 0; transition: all .35s ease; background: transparent;[m
+[32m+[m[32m  position: sticky; top: 0; width: 100%; z-index: 1000; padding: .8rem 0; transition: all .35s ease; background: rgba(7,26,47,.92); backdrop-filter: blur(20px); box-shadow: 0 8px 24px rgba(0,0,0,.12);[m
+ }[m
+[31m-.navbar.scrolled { background: rgba(7,26,47,.95); backdrop-filter: blur(20px); box-shadow: 0 8px 30px rgba(0,0,0,.15); }[m
+[31m-.navbar .container { display: flex; align-items: center; justify-content: space-between; }[m
+[31m-.navbar-brand { display: inline-flex; align-items: center; gap: .7rem; font-weight: 700; color: var(--white); }[m
+[32m+[m[32m.navbar.scrolled { background: rgba(7,26,47,.97); box-shadow: 0 10px 30px rgba(0,0,0,.16); }[m
+[32m+[m[32m.navbar .container { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }[m
+[32m+[m[32m.navbar-brand { display: inline-flex; align-items: center; gap: .7rem; font-weight: 700; color: var(--white); flex-shrink: 0; }[m
+ .navbar-brand img { width: 48px; height: 48px; object-fit: cover; border-radius: 50%; box-shadow: 0 8px 24px rgba(0,0,0,.15); }[m
+[31m-.navbar-nav { display: flex; gap: 1.2rem; list-style: none; margin: 0; padding: 0; }[m
+[31m-.navbar-nav a { color: rgba(255,255,255,.9); font-weight: 500; transition: color .25s ease; position: relative; }[m
+[32m+[m[32m.navbar-nav { display: flex; gap: 1.2rem; list-style: none; margin: 0; padding: 0; align-items: center; flex-wrap: wrap; justify-content: flex-end; }[m
+[32m+[m[32m.navbar-nav a { color: rgba(255,255,255,.9); font-weight: 500; transition: color .25s ease, transform .25s ease; position: relative; display: inline-block; }[m
+[32m+[m[32m.navbar-nav a:hover { transform: translateY(-1px); }[m
+ .navbar-nav a.active, .navbar-nav a:hover { color: var(--gold-soft); }[m
+ .navbar-nav a::after { content: ''; position: absolute; left: 0; bottom: -6px; width: 0; height: 2px; background: var(--gold); transition: width .25s ease; }[m
+ .navbar-nav a.active::after, .navbar-nav a:hover::after { width: 100%; }[m
+ .navbar-toggler { display: none; background: transparent; border: none; color: var(--white); font-size: 1.35rem; }[m
+ [m
+ .hero {[m
+[31m-  min-height: 100vh; display: grid; align-items: center; position: relative; color: var(--white); overflow: hidden;[m
+[32m+[m[32m  min-height: 0; padding: 5rem 0 3rem; display: grid; align-items: center; position: relative; color: var(--white); overflow: hidden;[m
+   background: linear-gradient(120deg, rgba(3,17,31,.88), rgba(7,26,47,.62));[m
+ }[m
+ .hero::before {[m
+[36m@@ -73,7 +78,7 @@[m [mbody:not(.cursor-enabled) .cursor-dot, body:not(.cursor-enabled) .cursor-outline[m
+   content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(7,26,47,.95), rgba(7,26,47,.4)); z-index: -1;[m
+ }[m
+ .hero canvas { position:absolute; inset:0; z-index:0; }[m
+[31m-.hero .container { position: relative; z-index: 2; display: grid; grid-template-columns: 1.1fr .9fr; gap: 3rem; align-items: center; padding-top: 4rem; }[m
+[32m+[m[32m.hero .container { position: relative; z-index: 2; display: grid; grid-template-columns: 1.1fr .9fr; gap: 3rem; align-items: center; padding-top: 1rem; }[m
+ .hero-copy h1 { font-size: clamp(2.4rem, 5vw, 4.2rem); margin: 0 0 1rem; line-height: 1.1; }[m
+ .hero-copy .eyebrow { font-size: .85rem; letter-spacing: .3em; text-transform: uppercase; color: var(--gold-soft); margin-bottom: 1rem; }[m
+ .hero-copy p { font-size: 1rem; line-height: 1.8; color: rgba(255,255,255,.8); max-width: 650px; }[m
+[36m@@ -121,11 +126,14 @@[m [mbody:not(.cursor-enabled) .cursor-dot, body:not(.cursor-enabled) .cursor-outline[m
+ .project-card .btn { margin-top: 1rem; }[m
+ [m
+ .gallery-grid { columns: 3 280px; column-gap: 1.25rem; }[m
+[31m-.gallery-card { position: relative; display: inline-block; width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 1rem; box-shadow: var(--shadow); break-inside: avoid; }[m
+[31m-.gallery-card img { width: 100%; height: auto; transition: transform .35s ease, filter .35s ease; cursor: pointer; }[m
+[32m+[m[32m.gallery-card { position: relative; display: inline-block; width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 1rem; box-shadow: var(--shadow); break-inside: avoid; animation: galleryFade .55s ease both; }[m
+[32m+[m[32m.gallery-card img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; transition: transform .35s ease, filter .35s ease; cursor: pointer; }[m
+ .gallery-card::after { content: 'View'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--white); font-weight: 700; background: rgba(7,26,47,.45); opacity: 0; transition: opacity .25s ease; }[m
+ .gallery-card:hover img { transform: scale(1.06); filter: brightness(1.03); }[m
+ .gallery-card:hover::after { opacity: 1; }[m
+[32m+[m[32m.glightbox-container .gslide-description,[m
+[32m+[m[32m.glightbox-container .gslide-title,[m
+[32m+[m[32m.glightbox-container .gdesc-inner { display: none !important; }[m
+ [m
+ .cert-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }[m
+ .cert-card { padding: 1.5rem; border-radius: calc(var(--radius) + 2px); background: rgba(255,255,255,.9); box-shadow: var(--shadow); border: 1px solid rgba(7,26,47,.06); }[m
+[36m@@ -154,7 +162,7 @@[m [mtextarea.form-control { min-height: 140px; resize: vertical; }[m
+ .footer .brand p { max-width: 300px; line-height: 1.8; }[m
+ .footer-bottom { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.12); display: flex; justify-content: space-between; color: rgba(255,255,255,.65); }[m
+ [m
+[31m-.page-hero { padding-top: 140px; padding-bottom: 80px; background: linear-gradient(120deg, rgba(3,17,31,.95), rgba(7,26,47,.8)); color: var(--white); position: relative; overflow: hidden; }[m
+[32m+[m[32m.page-hero { padding-top: 2.5rem; padding-bottom: 2.3rem; background: linear-gradient(120deg, rgba(3,17,31,.95), rgba(7,26,47,.8)); color: var(--white); position: relative; overflow: hidden; }[m
+ .page-hero::before { content: ''; position: absolute; inset: 0; background: url('../images/pdf_extracted/page_02_img_1.jpeg') center/cover no-repeat; opacity: .2; transform: scale(1.05); }[m
+ .page-hero .container { position: relative; z-index: 1; }[m
+ .page-hero .eyebrow { color: var(--gold-soft); letter-spacing: .3em; text-transform: uppercase; font-size: .8rem; }[m
+[36m@@ -169,3 +177,4 @@[m [mtextarea.form-control { min-height: 140px; resize: vertical; }[m
+ @keyframes spin { to { transform: rotate(360deg); } }[m
+ @keyframes scrollDown { 0% { transform: translate(-50%, 0); opacity: 0; } 50% { opacity: 1; } 100% { transform: translate(-50%, 16px); opacity: 0; } }[m
+ @keyframes floatUp { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }[m
+[32m+[m[32m@keyframes galleryFade { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }[m
+[1mdiff --git a/assets/js/main.js b/assets/js/main.js[m
+[1mindex 40701be..ce3536c 100644[m
+[1m--- a/assets/js/main.js[m
+[1m+++ b/assets/js/main.js[m
+[36m@@ -9,37 +9,93 @@[m [mdocument.addEventListener('DOMContentLoaded', () => {[m
+ [m
+   const navbar = document.querySelector('.navbar');[m
+   const navLinks = [...document.querySelectorAll('.navbar-nav a')];[m
+[31m-  const currentPage = window.location.pathname.split('/').pop() || 'index.html';[m
+[31m-  navLinks.forEach(link => {[m
+[31m-    const href = link.getAttribute('href');[m
+[31m-    const isCurrentPage = href === currentPage || (currentPage === 'index.html' && href === 'index.html');[m
+[31m-    link.classList.toggle('active', isCurrentPage);[m
+[31m-  });[m
+[32m+[m[32m  const currentPage = (window.location.pathname.split('/').pop() || 'index.html').replace(/\/$/, '');[m
+ [m
+[31m-  window.addEventListener('scroll', () => {[m
+[31m-    if (window.scrollY > 40) navbar.classList.add('scrolled'); else navbar.classList.remove('scrolled');[m
+[31m-    if (currentPage === 'index.html') {[m
+[31m-      const sections = document.querySelectorAll('section[id]');[m
+[31m-      let current = '';[m
+[31m-      sections.forEach(section => {[m
+[31m-        const top = section.offsetTop - 140;[m
+[31m-        if (window.scrollY >= top) current = section.getAttribute('id');[m
+[31m-      });[m
+[31m-      navLinks.forEach(link => {[m
+[31m-        const href = link.getAttribute('href');[m
+[31m-        const isActiveSection = href === `#${current}` || (current === '' && href === '#home');[m
+[31m-        link.classList.toggle('active', isActiveSection);[m
+[31m-      });[m
+[32m+[m[32m  const normalizePage = (value) => {[m
+[32m+[m[32m    if (!value || value === '/' || value === 'index.html') return 'index.html';[m
+[32m+[m[32m    return value.replace(/\/$/, '').split('?')[0].split('#')[0];[m
+[32m+[m[32m  };[m
+[32m+[m
+[32m+[m[32m  const setActiveNav = () => {[m
+[32m+[m[32m    const normalizedCurrent = normalizePage(currentPage);[m
+[32m+[m[32m    navLinks.forEach(link => {[m
+[32m+[m[32m      const href = link.getAttribute('href') || '';[m
+[32m+[m[32m      const normalizedHref = normalizePage(href);[m
+[32m+[m[32m      link.classList.toggle('active', normalizedHref === normalizedCurrent);[m
+[32m+[m[32m    });[m
+[32m+[m[32m  };[m
+[32m+[m
+[32m+[m[32m  const closeMenu = () => {[m
+[32m+[m[32m    const toggle = document.querySelector('.navbar-toggler');[m
+[32m+[m[32m    const nav = document.querySelector('.navbar-nav');[m
+[32m+[m[32m    nav?.classList.remove('open');[m
+[32m+[m[32m    document.body.classList.remove('menu-open');[m
+[32m+[m[32m    toggle?.setAttribute('aria-expanded', 'false');[m
+[32m+[m[32m    if (toggle) {[m
+[32m+[m[32m      const icon = toggle.querySelector('i');[m
+[32m+[m[32m      icon?.classList.remove('fa-xmark');[m
+[32m+[m[32m      icon?.classList.add('fa-bars');[m
+     }[m
+[32m+[m[32m  };[m
+[32m+[m
+[32m+[m[32m  const openMenu = () => {[m
+[32m+[m[32m    const toggle = document.querySelector('.navbar-toggler');[m
+[32m+[m[32m    const nav = document.querySelector('.navbar-nav');[m
+[32m+[m[32m    nav?.classList.add('open');[m
+[32m+[m[32m    document.body.classList.add('menu-open');[m
+[32m+[m[32m    toggle?.setAttribute('aria-expanded', 'true');[m
+[32m+[m[32m    if (toggle) {[m
+[32m+[m[32m      const icon = toggle.querySelector('i');[m
+[32m+[m[32m      icon?.classList.remove('fa-bars');[m
+[32m+[m[32m      icon?.classList.add('fa-xmark');[m
+[32m+[m[32m    }[m
+[32m+[m[32m  };[m
+[32m+[m
+[32m+[m[32m  setActiveNav();[m
+[32m+[m
+[32m+[m[32m  window.addEventListener('scroll', () => {[m
+[32m+[m[32m    if (window.scrollY > 40) navbar?.classList.add('scrolled'); else navbar?.classList.remove('scrolled');[m
+   });[m
+ [m
+   const toggle = document.querySelector('.navbar-toggler');[m
+   const nav = document.querySelector('.navbar-nav');[m
+   if (toggle && nav) {[m
+[31m-    toggle.addEventListener('click', () => nav.classList.toggle('open'));[m
+[31m-    navLinks.forEach(link => link.addEventListener('click', () => nav.classList.remove('open')));[m
+[32m+[m[32m    toggle.addEventListener('click', e => {[m
+[32m+[m[32m      e.stopPropagation();[m
+[32m+[m[32m      nav.classList.contains('open') ? closeMenu() : openMenu();[m
+[32m+[m[32m    });[m
+[32m+[m
+[32m+[m[32m    navLinks.forEach(link => {[m
+[32m+[m[32m      link.addEventListener('click', e => {[m
+[32m+[m[32m        const href = link.getAttribute('href') || '';[m
+[32m+[m[32m        if (!href || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('#')) {[m
+[32m+[m[32m          closeMenu();[m
+[32m+[m[32m          return;[m
+[32m+[m[32m        }[m
+[32m+[m[32m        e.preventDefault();[m
+[32m+[m[32m        document.body.classList.add('page-transitioning');[m
+[32m+[m[32m        closeMenu();[m
+[32m+[m[32m        setTimeout(() => {[m
+[32m+[m[32m          window.location.href = href;[m
+[32m+[m[32m        }, 180);[m
+[32m+[m[32m      });[m
+[32m+[m[32m    });[m
+[32m+[m
+[32m+[m[32m    document.addEventListener('click', e => {[m
+[32m+[m[32m      if (!nav.contains(e.target) && !toggle.contains(e.target)) closeMenu();[m
+[32m+[m[32m    });[m
+[32m+[m
+[32m+[m[32m    document.addEventListener('keydown', e => {[m
+[32m+[m[32m      if (e.key === 'Escape') closeMenu();[m
+[32m+[m[32m    });[m
+[32m+[m
+[32m+[m[32m    window.addEventListener('resize', () => {[m
+[32m+[m[32m      if (window.innerWidth > 992) closeMenu();[m
+[32m+[m[32m    });[m
+   }[m
+ [m
+[32m+[m[32m  document.body.classList.add('page-ready');[m
+[32m+[m
+   const revealElements = document.querySelectorAll('.reveal');[m
+   const observer = new IntersectionObserver(entries => {[m
+     entries.forEach(entry => {[m
+[36m@@ -171,10 +227,27 @@[m [mdocument.addEventListener('DOMContentLoaded', () => {[m
+   const galleryContainer = document.querySelector('#gallery-grid');[m
+   if (galleryContainer) {[m
+     galleryContainer.innerHTML = galleryImages.map((name) => `[m
+[31m-      <a class="gallery-card" href="assets/images/pdf_extracted/${name}" data-glightbox="description: ${name}">[m
+[32m+[m[32m      <a class="gallery-card" href="assets/images/pdf_extracted/${name}" data-glightbox="type:image">[m
+         <img src="assets/images/pdf_extracted/${name}" alt="S40 Construction project image" loading="lazy">[m
+       </a>[m
+     `).join('');[m
+[31m-    if (window.GLightbox) new GLightbox({ selector: '.gallery-card' });[m
+[32m+[m
+[32m+[m[32m    galleryImages.slice(0, 8).forEach((name) => {[m
+[32m+[m[32m      const preload = new Image();[m
+[32m+[m[32m      preload.src = `assets/images/pdf_extracted/${name}`;[m
+[32m+[m[32m    });[m
+[32m+[m
+[32m+[m[32m    if (window.GLightbox) {[m
+[32m+[m[32m      new GLightbox({[m
+[32m+[m[32m        selector: '.gallery-card',[m
+[32m+[m[32m        touchNavigation: true,[m
+[32m+[m[32m        loop: true,[m
+[32m+[m[32m        closeButton: true,[m
+[32m+[m[32m        preload: true,[m
+[32m+[m[32m        openEffect: 'zoom',[m
+[32m+[m[32m        closeEffect: 'fade',[m
+[32m+[m[32m        slideEffect: 'fade'[m
+[32m+[m[32m      });[m
+[32m+[m[32m    }[m
+   }[m
+ });[m

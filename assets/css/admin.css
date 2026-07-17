@@ -1,0 +1,51 @@
+:root {
+  --admin-navy: #071a2f;
+  --admin-gold: #c9a227;
+}
+
+/* Full-screen live background (animated gradient + subtle particles) */
+.admin-bg-live {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #071a2f;
+}
+
+.admin-bg-live .bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 20%, rgba(201,162,39,.25), transparent 45%),
+              radial-gradient(circle at 80% 30%, rgba(120,170,255,.18), transparent 50%),
+              radial-gradient(circle at 40% 80%, rgba(70,200,170,.14), transparent 55%),
+              linear-gradient(135deg, rgba(3,17,31,.95), rgba(7,26,47,.7));
+  animation: adminGlow 10s ease-in-out infinite;
+}
+
+.admin-bg-live canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: .85;
+}
+
+.admin-bg-live::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.45));
+  pointer-events: none;
+}
+
+@keyframes adminGlow {
+  0%, 100% { filter: saturate(1) brightness(1); transform: scale(1); }
+  50% { filter: saturate(1.18) brightness(1.08); transform: scale(1.02); }
+}
+
+/* Ensure admin content stays above background */
+.admin-shell {
+  position: relative;
+  z-index: 1;
+}
+

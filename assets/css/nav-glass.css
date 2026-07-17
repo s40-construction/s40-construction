@@ -1,0 +1,49 @@
+/* Navbar improvements:
+   - Keep links horizontal on all pages
+   - Make navbar transparent when scrolling (so it won't block content)
+*/
+
+/* Desktop: ensure navbar links stay inline and not overlay the page */
+@media (min-width: 0px) {
+  .navbar-nav {
+    display: flex;
+    flex-direction: row;
+    gap: 1.2rem;
+    justify-content: flex-end;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .navbar-nav a {
+    width: auto;
+    padding: 0;
+    font-size: inherit;
+    border-bottom: none;
+  }
+}
+
+/* Mobile menu toggle: keep the original fixed/vertical behavior */
+@media (max-width: 992px) {
+  .navbar-nav {
+    display: flex;
+  }
+}
+
+/* Transparent navbar while scrolling (main.js already toggles .scrolled)
+   default navbar is already dark; we make it transparent when NOT scrolled */
+.navbar {
+  background: rgba(7,26,47,0.25) !important;
+  box-shadow: none !important;
+}
+
+.navbar.scrolled {
+  background: rgba(7,26,47,.55) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.16) !important;
+}
+
+/* When nav is transparent, ensure links remain readable */
+.navbar .navbar-nav a {
+  color: rgba(255,255,255,.9) !important;
+}
+
