@@ -9,36 +9,92 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const navbar = document.querySelector('.navbar');
   const navLinks = [...document.querySelectorAll('.navbar-nav a')];
-  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-  navLinks.forEach(link => {
-    const href = link.getAttribute('href');
-    const isCurrentPage = href === currentPage || (currentPage === 'index.html' && href === 'index.html');
-    link.classList.toggle('active', isCurrentPage);
-  });
+  const currentPage = (window.location.pathname.split('/').pop() || 'index.html').replace(/\/$/, '');
+
+  const normalizePage = (value) => {
+    if (!value || value === '/' || value === 'index.html') return 'index.html';
+    return value.replace(/\/$/, '').split('?')[0].split('#')[0];
+  };
+
+  const setActiveNav = () => {
+    const normalizedCurrent = normalizePage(currentPage);
+    navLinks.forEach(link => {
+      const href = link.getAttribute('href') || '';
+      const normalizedHref = normalizePage(href);
+      link.classList.toggle('active', normalizedHref === normalizedCurrent);
+    });
+  };
+
+  const closeMenu = () => {
+    const toggle = document.querySelector('.navbar-toggler');
+    const nav = document.querySelector('.navbar-nav');
+    nav?.classList.remove('open');
+    document.body.classList.remove('menu-open');
+    toggle?.setAttribute('aria-expanded', 'false');
+    if (toggle) {
+      const icon = toggle.querySelector('i');
+      icon?.classList.remove('fa-xmark');
+      icon?.classList.add('fa-bars');
+    }
+  };
+
+  const openMenu = () => {
+    const toggle = document.querySelector('.navbar-toggler');
+    const nav = document.querySelector('.navbar-nav');
+    nav?.classList.add('open');
+    document.body.classList.add('menu-open');
+    toggle?.setAttribute('aria-expanded', 'true');
+    if (toggle) {
+      const icon = toggle.querySelector('i');
+      icon?.classList.remove('fa-bars');
+      icon?.classList.add('fa-xmark');
+    }
+  };
+
+  setActiveNav();
 
   window.addEventListener('scroll', () => {
-    if (window.scrollY > 40) navbar.classList.add('scrolled'); else navbar.classList.remove('scrolled');
-    if (currentPage === 'index.html') {
-      const sections = document.querySelectorAll('section[id]');
-      let current = '';
-      sections.forEach(section => {
-        const top = section.offsetTop - 140;
-        if (window.scrollY >= top) current = section.getAttribute('id');
-      });
-      navLinks.forEach(link => {
-        const href = link.getAttribute('href');
-        const isActiveSection = href === `#${current}` || (current === '' && href === '#home');
-        link.classList.toggle('active', isActiveSection);
-      });
-    }
+    if (window.scrollY > 40) navbar?.classList.add('scrolled'); else navbar?.classList.remove('scrolled');
   });
 
   const toggle = document.querySelector('.navbar-toggler');
   const nav = document.querySelector('.navbar-nav');
   if (toggle && nav) {
-    toggle.addEventListener('click', () => nav.classList.toggle('open'));
-    navLinks.forEach(link => link.addEventListener('click', () => nav.classList.remove('open')));
+    toggle.addEventListener('click', e => {
+      e.stopPropagation();
+      nav.classList.contains('open') ? closeMenu() : openMenu();
+    });
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', e => {
+        const href = link.getAttribute('href') || '';
+        if (!href || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('#')) {
+          closeMenu();
+          return;
+        }
+        e.preventDefault();
+        document.body.classList.add('page-transitioning');
+        closeMenu();
+        setTimeout(() => {
+          window.location.href = href;
+        }, 180);
+      });
+    });
+
+    document.addEventListener('click', e => {
+      if (!nav.contains(e.target) && !toggle.contains(e.target)) closeMenu();
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeMenu();
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 992) closeMenu();
+    });
   }
+
+  document.body.classList.add('page-ready');
 
   const revealElements = document.querySelectorAll('.reveal');
   const observer = new IntersectionObserver(entries => {
@@ -171,10 +227,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const galleryContainer = document.querySelector('#gallery-grid');
   if (galleryContainer) {
     galleryContainer.innerHTML = galleryImages.map((name) => `
-      <a class="gallery-card" href="assets/images/pdf_extracted/${name}" data-glightbox="description: ${name}">
+      <a class="gallery-card" href="assets/images/pdf_extracted/${name}" data-glightbox="type:image">
         <img src="assets/images/pdf_extracted/${name}" alt="S40 Construction project image" loading="lazy">
       </a>
     `).join('');
-    if (window.GLightbox) new GLightbox({ selector: '.gallery-card' });
+
+    galleryImages.slice(0, 8).forEach((name) => {
+      const preload = new Image();
+      preload.src = `assets/images/pdf_extracted/${name}`;
+    });
+
+    if (window.GLightbox) {
+      new GLightbox({
+        selector: '.gallery-card',
+        touchNavigation: true,
+        loop: true,
+        closeButton: true,
+        preload: true,
+        openEffect: 'zoom',
+        closeEffect: 'fade',
+        slideEffect: 'fade'
+      });
+    }
   }
 });
