@@ -114,5 +114,10 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
     <script src="assets/js/main.js"></script>
+    <script>
+      if (window.location.pathname.endsWith('/about.html') || window.location.pathname.endsWith('/about')) {
+        window.location.replace('index.html');
+      }
+    </script>
   </body>
 </html>
