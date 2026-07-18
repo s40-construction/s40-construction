@@ -269,31 +269,35 @@
       const countBadge = document.getElementById('message-count');
 
       function formatDate(iso) {
-        return new Date(iso).toLocaleString([], {
-          dateStyle: 'medium',
-          timeStyle: 'short'
-        });
+        try {
+          return new Date(iso).toLocaleString([], {
+            dateStyle: 'medium',
+            timeStyle: 'short'
+          });
+        } catch {
+          return '';
+        }
       }
 
-      function renderMessages() {
-        const messages = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        countBadge.textContent = `${messages.length} ${messages.length === 1 ? 'message' : 'messages'}`;
+      function renderMessages(messages) {
+        const safe = Array.isArray(messages) ? messages : [];
+        countBadge.textContent = `${safe.length} ${safe.length === 1 ? 'message' : 'messages'}`;
 
-        if (!messages.length) {
+        if (!safe.length) {
           list.innerHTML = '<div class="empty-state"><i class="fa-solid fa-inbox"></i><p>No client messages yet.</p></div>';
           return;
         }
 
-        list.innerHTML = messages.map(message => `
+        list.innerHTML = safe.map(message => `
           <article class="message-item">
             <div class="message-top">
               <div>
-                <div class="message-name">${message.name}</div>
+                <div class="message-name">${message.name || 'Client'}</div>
                 <div class="message-meta">${message.email || 'No email provided'} • ${message.phone || 'No phone provided'}</div>
               </div>
               <div class="message-actions">
                 <div class="message-meta">${formatDate(message.sentAt)}</div>
-                <button class="delete-btn" type="button" data-id="${message.id}"><i class="fa-solid fa-trash"></i> Delete</button>
+                <button class="delete-btn" type="button" data-id="${message.id || ''}" data-fbkey="${message.fbKey || ''}"><i class="fa-solid fa-trash"></i> Delete</button>
               </div>
             </div>
             <div class="message-tags">
@@ -304,28 +308,62 @@
         `).join('');
       }
 
-      function deleteMessage(id) {
-        const messages = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        const updated = messages.filter(message => message.id !== id);
-        localStorage.setItem(storageKey, JSON.stringify(updated));
-        renderMessages();
+      function syncLocalCache(messages) {
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(messages || []));
+        } catch {
+          // ignore
+        }
       }
 
-      list.addEventListener('click', event => {
+      function getLocalMessages() {
+        try {
+          return JSON.parse(localStorage.getItem(storageKey) || '[]');
+        } catch {
+          return [];
+        }
+      }
+
+      list.addEventListener('click', async event => {
         const button = event.target.closest('.delete-btn');
         if (!button) return;
-        deleteMessage(button.getAttribute('data-id'));
+
+        const fbKey = button.getAttribute('data-fbkey');
+        const id = button.getAttribute('data-id');
+
+        // Delete from Firebase if we have the RTDB key, otherwise fall back to local cache
+        if (window.firebaseDatabase && fbKey) {
+          try {
+            await window.firebaseDatabase.ref('messages').child(fbKey).remove();
+          } catch (error) {
+            console.warn('Unable to delete message from Firebase', error);
+          }
+        } else {
+          const updated = getLocalMessages().filter(m => m.id !== id);
+          syncLocalCache(updated);
+          renderMessages(updated);
+        }
       });
 
-      window.addEventListener('s40:messages-updated', renderMessages);
-      window.addEventListener('storage', event => {
-        if (event.key === storageKey) renderMessages();
-      });
-      if (window.loadMessagesFromSharedInbox) {
-        window.loadMessagesFromSharedInbox(renderMessages);
-      } else {
-        renderMessages();
-      }
+      // --- Primary: load from Firebase and keep in sync realtime ---
+      (function initFirebaseInboxRealtime() {
+        // assets/js/main.js exposes initFirebase + firebaseDatabase via window functions only if called.
+        // However, in admin/index.html we can rely on loadMessagesFromSharedInbox if present.
+        if (window.loadMessagesFromSharedInbox) {
+          // this will load remote into local cache too (based on main.js)
+          window.loadMessagesFromSharedInbox((msgs) => {
+            renderMessages(msgs);
+          });
+        } else {
+          renderMessages(getLocalMessages());
+        }
+
+        // For realtime updates, use RTDB listener if firebase is ready on this page.
+        // main.js keeps firebaseDatabase in module scope; but we can still use it indirectly by calling loadMessagesFromSharedInbox.
+        // If you want true realtime, we should add an RTDB listener script here; for now ensure cross-device sync works.
+      })();
+
     </script>
   </body>
 </html>
+
