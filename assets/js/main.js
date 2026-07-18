@@ -81,6 +81,8 @@ const loadMessagesFromSharedInbox = async (callback) => {
 
 window.saveMessageToSharedInbox = saveMessageToSharedInbox;
 window.loadMessagesFromSharedInbox = loadMessagesFromSharedInbox;
+window.initFirebase = initFirebase;
+window.getFirebaseDatabase = () => firebaseDatabase;
 
 const showFloatingNotice = (message, timeout = 3000) => {
   let notice = document.querySelector('.contact-success-notice');
