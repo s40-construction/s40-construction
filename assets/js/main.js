@@ -1,5 +1,5 @@
 const firebaseConfig = {
-  apiKey: "AIzaSyBcK_rVtBPoMLsDXx72m6sMx8g7cnqX8dM",
+  apiKey: "AIzaSyCUl7lkRpD4EvOt7MXf-M1H2yvnezlYi2U",
   authDomain: "markkeneth-b741d.firebaseapp.com",
   databaseURL: "https://markkeneth-b741d-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "markkeneth-b741d",
