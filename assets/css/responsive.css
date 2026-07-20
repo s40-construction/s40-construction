@@ -7,7 +7,10 @@ body.menu-open {
 @media (max-width: 992px) {
   .hero .container, .about-intro, .contact-grid { grid-template-columns: 1fr; }
   .service-grid, .project-grid, .cert-grid, .counter-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .footer .container { grid-template-columns: 1fr 1fr; }
+  .agency-strip-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem 1.6rem; }
+  .agency-item img { max-height: 56px; }
   .navbar-nav {
     display: flex;
     position: fixed;
@@ -63,7 +66,11 @@ body.menu-open {
   .hero-visual { justify-self: start; margin-top: .75rem; }
   .hero-visual-shell { min-height: 0; }
   .service-grid, .project-grid, .cert-grid, .counter-row, .footer .container { grid-template-columns: 1fr; }
-  .gallery-grid { columns: 1; }
+  .agency-strip { padding: 1.9rem 0; }
+  .agency-strip-grid { grid-template-columns: 1fr; gap: 1.2rem; }
+  .agency-item { min-height: 56px; }
+  .agency-item img { max-height: 48px; max-width: 86%; }
+  .gallery-grid { grid-template-columns: 1fr; }
   .footer-bottom { flex-direction: column; gap: .5rem; }
   .page-hero { padding-top: 2rem; }
 }

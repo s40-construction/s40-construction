@@ -10,9 +10,7 @@
   {
     "page": 2,
     "text_path": "c:\\Users\\Mark Keneth Bonquin\\Documents\\portfolio.html\\assets\\text\\page_02.txt",
-    "images": [
-      "page_02_img_1.jpeg"
-    ]
+    "images": []
   },
   {
     "page": 3,
@@ -54,7 +52,6 @@
     "page": 8,
     "text_path": "c:\\Users\\Mark Keneth Bonquin\\Documents\\portfolio.html\\assets\\text\\page_08.txt",
     "images": [
-      "page_08_img_1.jpeg",
       "page_08_img_2.jpeg",
       "page_08_img_3.jpeg"
     ]
@@ -63,7 +60,6 @@
     "page": 9,
     "text_path": "c:\\Users\\Mark Keneth Bonquin\\Documents\\portfolio.html\\assets\\text\\page_09.txt",
     "images": [
-      "page_09_img_1.jpeg",
       "page_09_img_2.jpeg",
       "page_09_img_3.jpeg",
       "page_09_img_4.jpeg"
@@ -73,7 +69,6 @@
     "page": 10,
     "text_path": "c:\\Users\\Mark Keneth Bonquin\\Documents\\portfolio.html\\assets\\text\\page_10.txt",
     "images": [
-      "page_10_img_1.jpeg",
       "page_10_img_2.jpeg",
       "page_10_img_3.jpeg"
     ]
@@ -82,7 +77,6 @@
     "page": 11,
     "text_path": "c:\\Users\\Mark Keneth Bonquin\\Documents\\portfolio.html\\assets\\text\\page_11.txt",
     "images": [
-      "page_11_img_1.jpeg",
       "page_11_img_2.jpeg",
       "page_11_img_3.jpeg",
       "page_11_img_4.jpeg"
@@ -92,7 +86,6 @@
     "page": 12,
     "text_path": "c:\\Users\\Mark Keneth Bonquin\\Documents\\portfolio.html\\assets\\text\\page_12.txt",
     "images": [
-      "page_12_img_1.jpeg",
       "page_12_img_2.jpeg"
     ]
   },
@@ -139,7 +132,6 @@
     "page": 17,
     "text_path": "c:\\Users\\Mark Keneth Bonquin\\Documents\\portfolio.html\\assets\\text\\page_17.txt",
     "images": [
-      "page_17_img_1.jpeg",
       "page_17_img_2.jpeg",
       "page_17_img_3.jpeg"
     ]
@@ -158,7 +150,6 @@
     "page": 19,
     "text_path": "c:\\Users\\Mark Keneth Bonquin\\Documents\\portfolio.html\\assets\\text\\page_19.txt",
     "images": [
-      "page_19_img_1.jpeg",
       "page_19_img_2.jpeg",
       "page_19_img_3.jpeg"
     ]
@@ -174,11 +165,7 @@
     "page": 21,
     "text_path": "c:\\Users\\Mark Keneth Bonquin\\Documents\\portfolio.html\\assets\\text\\page_21.txt",
     "images": [
-      "page_21_img_1.jpeg",
-      "page_21_img_2.jpeg",
-      "page_21_img_3.jpeg",
-      "page_21_img_4.jpeg",
-      "page_21_img_5.jpeg"
+      "page_21_img_3.jpeg"
     ]
   },
   {
