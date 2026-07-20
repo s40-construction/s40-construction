@@ -222,6 +222,45 @@ window.addEventListener('DOMContentLoaded', () => {
 
   document.body.classList.add('page-ready');
 
+  const heroVideo = document.querySelector('.hero-video');
+  if (heroVideo) {
+    const tryPlayHeroVideo = () => {
+      const playAttempt = heroVideo.play();
+      if (playAttempt && typeof playAttempt.catch === 'function') {
+        playAttempt.catch(() => {
+          // Some browsers block autoplay until the first user interaction.
+        });
+      }
+    };
+
+    heroVideo.muted = true;
+    heroVideo.autoplay = true;
+    heroVideo.loop = true;
+    heroVideo.playsInline = true;
+    heroVideo.setAttribute('muted', '');
+    heroVideo.setAttribute('autoplay', '');
+    heroVideo.setAttribute('loop', '');
+    heroVideo.setAttribute('playsinline', '');
+
+    tryPlayHeroVideo();
+    heroVideo.addEventListener('canplay', tryPlayHeroVideo);
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) tryPlayHeroVideo();
+    });
+
+    const unlockAutoplay = () => {
+      tryPlayHeroVideo();
+      window.removeEventListener('pointerdown', unlockAutoplay);
+      window.removeEventListener('touchstart', unlockAutoplay);
+      window.removeEventListener('keydown', unlockAutoplay);
+    };
+
+    window.addEventListener('pointerdown', unlockAutoplay, { once: true });
+    window.addEventListener('touchstart', unlockAutoplay, { once: true });
+    window.addEventListener('keydown', unlockAutoplay, { once: true });
+  }
+
   const pendingNotice = consumePendingNotice();
   if (pendingNotice) {
     showFloatingNotice(pendingNotice);
