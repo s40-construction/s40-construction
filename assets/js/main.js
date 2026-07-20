@@ -343,19 +343,21 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   const galleryImages = [
-    'page_01_img_1.jpeg','page_01_img_2.jpeg','page_02_img_1.jpeg','page_03_img_1.jpeg','page_04_img_1.jpeg','page_05_img_1.jpeg','page_06_img_1.jpeg','page_06_img_2.jpeg','page_07_img_1.jpeg','page_08_img_1.jpeg','page_08_img_2.jpeg','page_08_img_3.jpeg','page_09_img_1.jpeg','page_09_img_2.jpeg','page_09_img_3.jpeg','page_09_img_4.jpeg','page_10_img_1.jpeg','page_10_img_2.jpeg','page_10_img_3.jpeg','page_11_img_1.jpeg','page_11_img_2.jpeg','page_11_img_3.jpeg','page_11_img_4.jpeg','page_12_img_1.jpeg','page_12_img_2.jpeg','page_13_img_1.jpeg','page_13_img_2.jpeg','page_13_img_3.jpeg','page_13_img_4.jpeg','page_14_img_1.jpeg','page_14_img_2.jpeg','page_14_img_3.jpeg','page_15_img_1.jpeg','page_15_img_2.jpeg','page_15_img_3.jpeg','page_15_img_4.jpeg','page_16_img_1.jpeg','page_16_img_2.jpeg','page_16_img_3.jpeg','page_16_img_4.jpeg','page_17_img_1.jpeg','page_17_img_2.jpeg','page_17_img_3.jpeg','page_18_img_1.jpeg','page_18_img_2.jpeg','page_18_img_3.jpeg','page_18_img_4.jpeg','page_19_img_1.jpeg','page_19_img_2.jpeg','page_19_img_3.jpeg','page_20_img_1.jpeg','page_21_img_1.jpeg','page_21_img_2.jpeg','page_21_img_3.jpeg','page_21_img_4.jpeg','page_21_img_5.jpeg','page_22_img_1.jpeg'
+    'assets/images/57a82e46-366f-4909-a549-02e1d3c2f028.jpg',
+    'assets/images/e8d0b20b-3735-4614-9d9f-8603090f4011.jpg',
+    'assets/images/pdf_extracted/page_01_img_1.jpeg','assets/images/pdf_extracted/page_01_img_2.jpeg','assets/images/pdf_extracted/page_02_img_1.jpeg','assets/images/pdf_extracted/page_03_img_1.jpeg','assets/images/pdf_extracted/page_04_img_1.jpeg','assets/images/pdf_extracted/page_05_img_1.jpeg','assets/images/pdf_extracted/page_06_img_1.jpeg','assets/images/pdf_extracted/page_07_img_1.jpeg','assets/images/pdf_extracted/page_08_img_1.jpeg','assets/images/pdf_extracted/page_08_img_2.jpeg','assets/images/pdf_extracted/page_08_img_3.jpeg','assets/images/pdf_extracted/page_09_img_2.jpeg','assets/images/pdf_extracted/page_09_img_3.jpeg','assets/images/pdf_extracted/page_09_img_4.jpeg','assets/images/pdf_extracted/page_10_img_2.jpeg','assets/images/pdf_extracted/page_10_img_3.jpeg','assets/images/pdf_extracted/page_11_img_2.jpeg','assets/images/pdf_extracted/page_11_img_3.jpeg','assets/images/pdf_extracted/page_11_img_4.jpeg','assets/images/pdf_extracted/page_12_img_1.jpeg','assets/images/pdf_extracted/page_12_img_2.jpeg','assets/images/pdf_extracted/page_13_img_2.jpeg','assets/images/pdf_extracted/page_13_img_3.jpeg','assets/images/pdf_extracted/page_13_img_4.jpeg','assets/images/pdf_extracted/page_14_img_2.jpeg','assets/images/pdf_extracted/page_14_img_3.jpeg','assets/images/pdf_extracted/page_15_img_2.jpeg','assets/images/pdf_extracted/page_15_img_3.jpeg','assets/images/pdf_extracted/page_15_img_4.jpeg','assets/images/pdf_extracted/page_16_img_2.jpeg','assets/images/pdf_extracted/page_16_img_3.jpeg','assets/images/pdf_extracted/page_16_img_4.jpeg','assets/images/pdf_extracted/page_17_img_2.jpeg','assets/images/pdf_extracted/page_17_img_3.jpeg','assets/images/pdf_extracted/page_18_img_2.jpeg','assets/images/pdf_extracted/page_18_img_3.jpeg','assets/images/pdf_extracted/page_18_img_4.jpeg','assets/images/pdf_extracted/page_19_img_2.jpeg','assets/images/pdf_extracted/page_19_img_3.jpeg','assets/images/pdf_extracted/page_20_img_1.jpeg','assets/images/pdf_extracted/page_21_img_1.jpeg','assets/images/pdf_extracted/page_21_img_2.jpeg','assets/images/pdf_extracted/page_21_img_3.jpeg','assets/images/pdf_extracted/page_21_img_4.jpeg','assets/images/pdf_extracted/page_21_img_5.jpeg','assets/images/pdf_extracted/page_22_img_1.jpeg'
   ];
   const galleryContainer = document.querySelector('#gallery-grid');
   if (galleryContainer) {
-    galleryContainer.innerHTML = galleryImages.map((name) => `
-      <a class="gallery-card" href="assets/images/pdf_extracted/${name}" data-glightbox="type:image">
-        <img src="assets/images/pdf_extracted/${name}" alt="S40 Construction project image" loading="lazy">
+    galleryContainer.innerHTML = galleryImages.map((src) => `
+      <a class="gallery-card" href="${src}" data-glightbox="type:image">
+        <img src="${src}" alt="S40 Construction project image" loading="lazy">
       </a>
     `).join('');
 
-    galleryImages.slice(0, 8).forEach((name) => {
+    galleryImages.slice(0, 8).forEach((src) => {
       const preload = new Image();
-      preload.src = `assets/images/pdf_extracted/${name}`;
+      preload.src = src;
     });
 
     if (window.GLightbox) {
