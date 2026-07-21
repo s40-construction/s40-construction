@@ -78,6 +78,7 @@ body.menu-open {
   .agency-item img { max-height: 48px; max-width: 86%; }
   .gallery-grid { grid-template-columns: 1fr; }
   .footer-bottom { flex-direction: column; gap: .5rem; }
+  .footer-logo { height: 130px; }
   .page-hero { padding-top: 2rem; }
 }
 
