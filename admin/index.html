@@ -408,7 +408,6 @@
         console.log('DELETE CLICKED');
         console.log('  fbKey from button:', fbKey);
         console.log('  id from button:', id);
-        console.log('  button HTML:', button.outerHTML);
 
         if (!fbKey) {
           console.error('ERROR: fbKey is empty! Cannot delete from Firebase');
@@ -416,31 +415,39 @@
           return;
         }
 
-        // Remove from UI immediately
-        const messages = getLocalMessages();
-        console.log('Current messages in localStorage:', messages.length);
-        console.log('All message keys:', messages.map(m => ({ id: m.id, fbKey: m.fbKey, name: m.name })));
-        
-        const updated = messages.filter(m => m.id !== id);
-        syncLocalCache(updated);
-        renderMessages(updated);
+        if (button) {
+          button.disabled = true;
+          button.textContent = 'Deleting...';
+        }
 
-        // Delete from Firebase if we have the RTDB key
-        if (window.firebaseDatabase && fbKey) {
+        // Delete from Firebase FIRST (don't modify UI yet)
+        if (window.firebaseDatabase) {
           try {
             console.log('Deleting from Firebase at path: messages/' + fbKey);
             await window.firebaseDatabase.ref('messages/' + fbKey).remove();
             console.log('✓ Firebase delete successful');
             showToast('Message deleted');
+            
+            // Remove from local storage
+            const messages = getLocalMessages();
+            const updated = messages.filter(m => m.id !== fbKey);  // Filter by Firebase key
+            syncLocalCache(updated);
+            renderMessages(updated);
           } catch (error) {
             console.error('✗ Firebase delete FAILED:', error);
-            showToast('Delete failed - trying to recover...');
-            // Re-render to show message again if delete failed
-            renderMessages(messages);
+            showToast('Delete failed: ' + error.message);
+            if (button) {
+              button.disabled = false;
+              button.textContent = 'Delete';
+            }
           }
         } else {
-          console.warn('No Firebase DB or fbKey');
-          showToast('Message deleted from local storage');
+          console.warn('Firebase DB not available');
+          showToast('Firebase not available');
+          if (button) {
+            button.disabled = false;
+            button.textContent = 'Delete';
+          }
         }
       });
 
