@@ -459,10 +459,10 @@
           window.initFirebase();
         }
 
-        const db = window.getFirebaseDatabase ? window.getFirebaseDatabase() : null;
+        const db = window.firebaseDatabase;
         if (db) {
           console.log('Setting up Firebase realtime listener...');
-          db.ref('messages').orderByChild('sentAt').on('value', snapshot => {
+          db.ref('messages').on('value', snapshot => {
             console.log('Firebase listener triggered - children:', snapshot.numChildren());
             const remoteMessages = [];
             snapshot.forEach(child => {
@@ -483,7 +483,7 @@
         }
 
         refreshFromRemote();
-        window.setInterval(refreshFromRemote, 10000);
+        window.setInterval(refreshFromRemote, 15000);
       })();
 
     </script>
