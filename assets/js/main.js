@@ -402,16 +402,12 @@ window.addEventListener('DOMContentLoaded', () => {
         form.reset();
         if (button) {
           button.textContent = 'Message Sent';
-          setTimeout(() => {
-            button.disabled = false;
-            button.textContent = 'Send Message';
-          }, 3000);
         }
         
-        // Redirect to home after 2 seconds
+        // Redirect to home after message is sent (3.5 seconds to show message)
         setTimeout(() => {
-          window.location.href = '/s40-construction/';
-        }, 2000);
+          window.location.href = '/s40-construction/index.html';
+        }, 3500);
       } catch (error) {
         console.error('Unable to save message', error);
         if (button) {
