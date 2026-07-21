@@ -348,48 +348,24 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Check for form submission success (Formspree redirects with ?success=true)
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('success') === 'true') {
+    const successMessage = 'Thank you for reaching out! We\'ve received your message and will reply via email or phone shortly.';
+    showFloatingNotice(successMessage, 5000);
+    // Clean up URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
   const form = document.querySelector('#contact-form');
   if (form) {
     form.addEventListener('submit', e => {
-      e.preventDefault();
       const button = form.querySelector('button[type="submit"]');
-      const fields = {
-        name: form.querySelector('[name="name"]'),
-        email: form.querySelector('[name="email"]'),
-        phone: form.querySelector('[name="phone"]'),
-        subject: form.querySelector('[name="subject"]'),
-        message: form.querySelector('[name="message"]')
-      };
-
-      const payload = {
-        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-        name: fields.name?.value.trim() || 'Client',
-        email: fields.email?.value.trim() || '',
-        phone: fields.phone?.value.trim() || '',
-        subject: fields.subject?.value.trim() || 'New inquiry',
-        message: fields.message?.value.trim() || '',
-        sentAt: new Date().toISOString()
-      };
-
-      try {
-        saveMessageToSharedInbox(payload);
-      } catch (error) {
-        console.error('Unable to save message', error);
-      }
-
-      const successMessage = 'Thank you for reaching out. Please wait for our reply through email or phone call.';
-
       if (button) {
-        button.textContent = 'Message Sent';
         button.disabled = true;
+        button.textContent = 'Sending...';
       }
-
-      form.reset();
-      setPendingNotice(successMessage);
-
-      window.setTimeout(() => {
-        window.location.href = 'index.html';
-      }, 300);
+      // Allow form to submit naturally to Formspree
     });
   }
 
