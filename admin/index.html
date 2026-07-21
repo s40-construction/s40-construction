@@ -195,10 +195,10 @@
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
     <script src="../assets/js/main.js"></script>
     <script>
-      // Initialize Firebase on page load
-      window.addEventListener('load', () => {
+      // Initialize Firebase immediately (don't wait for load)
+      if (typeof window.initFirebase === 'function') {
         window.initFirebase();
-      });
+      }
 
       // Live admin background particles
       (function initAdminParticles() {
@@ -410,6 +410,17 @@
         const fbKey = button.getAttribute('data-fbkey');
         if (!fbKey) {
           alert('Error: Message ID missing. Please refresh and try again.');
+          return;
+        }
+
+        // Safety: ensure Firebase is initialized
+        if (!window.firebaseDatabase && typeof window.initFirebase === 'function') {
+          window.initFirebase();
+        }
+
+        if (!window.firebaseDatabase) {
+          console.error('Firebase still not available');
+          showToast('Firebase connection failed');
           return;
         }
 
