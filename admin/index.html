@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -41,7 +41,7 @@
         gap: .5rem;
         padding: .6rem 1rem;
         border-radius: 999px;
-        background: rgba(201, 162, 39, 0.14);
+        background: rgba(255, 117, 31, 0.14);
         color: var(--gold);
         font-weight: 600;
       }
@@ -134,7 +134,7 @@
         display: inline-flex;
         padding: .35rem .7rem;
         border-radius: 999px;
-        background: rgba(201, 162, 39, 0.14);
+        background: rgba(255, 117, 31, 0.14);
         color: var(--gold);
         font-size: .78rem;
         font-weight: 600;
@@ -236,7 +236,7 @@
 
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(201,162,39,.35)';
+            ctx.fillStyle = 'rgba(255,117,31,.35)';
             ctx.fill();
           }
 
@@ -345,7 +345,7 @@
             <div class="message-top">
               <div>
                 <div class="message-name">${message.name || 'Client'}</div>
-                <div class="message-meta">${message.email || 'No email provided'} • ${message.phone || 'No phone provided'}</div>
+                <div class="message-meta">${message.email || 'No email provided'} - ${message.phone || 'No phone provided'}</div>
               </div>
               <div class="message-actions">
                 <div class="message-meta">${formatDate(message.sentAt)}</div>
@@ -433,4 +433,7 @@
     </script>
   </body>
 </html>
+
+
+
 

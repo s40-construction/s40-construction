@@ -1,4 +1,4 @@
-const firebaseConfig = {
+﻿const firebaseConfig = {
   apiKey: "AIzaSyCUl7lkRpD4EvOt7MXf-M1H2yvnezlYi2U",
   authDomain: "markkeneth-b741d.firebaseapp.com",
   databaseURL: "https://markkeneth-b741d-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -125,6 +125,18 @@ const consumePendingNotice = () => {
 };
 
 window.addEventListener('DOMContentLoaded', () => {
+  if (window.GLightbox && document.querySelector('.water-lightbox')) {
+    new GLightbox({
+      selector: '.water-lightbox',
+      touchNavigation: true,
+      loop: true,
+      closeButton: true,
+      openEffect: 'zoom',
+      closeEffect: 'fade',
+      slideEffect: 'slide'
+    });
+  }
+
   const loadingScreen = document.querySelector('.loading-screen');
   if (loadingScreen) {
     window.addEventListener('load', () => {
@@ -303,7 +315,7 @@ window.addEventListener('DOMContentLoaded', () => {
         p.x += p.vx; p.y += p.vy;
         if (p.x < 0 || p.x > width) p.vx *= -1;
         if (p.y < 0 || p.y > height) p.vy *= -1;
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fillStyle = 'rgba(201,162,39,.38)'; ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,117,31,.38)'; ctx.fill();
       });
       ctx.strokeStyle = 'rgba(255,255,255,.16)';
       ctx.lineWidth = 1;
@@ -383,7 +395,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const galleryImages = [
     'assets/images/e8d0b20b-3735-4614-9d9f-8603090f4011.jpg',
-    'assets/images/pdf_extracted/page_01_img_1.jpeg','assets/images/pdf_extracted/page_01_img_2.jpeg','assets/images/pdf_extracted/page_03_img_1.jpeg','assets/images/pdf_extracted/page_04_img_1.jpeg','assets/images/pdf_extracted/page_05_img_1.jpeg','assets/images/pdf_extracted/page_06_img_1.jpeg','assets/images/pdf_extracted/page_07_img_1.jpeg','assets/images/pdf_extracted/page_08_img_2.jpeg','assets/images/pdf_extracted/page_08_img_3.jpeg','assets/images/pdf_extracted/page_09_img_2.jpeg','assets/images/pdf_extracted/page_09_img_3.jpeg','assets/images/pdf_extracted/page_09_img_4.jpeg','assets/images/pdf_extracted/page_10_img_2.jpeg','assets/images/pdf_extracted/page_10_img_3.jpeg','assets/images/pdf_extracted/page_11_img_2.jpeg','assets/images/pdf_extracted/page_11_img_3.jpeg','assets/images/pdf_extracted/page_11_img_4.jpeg','assets/images/pdf_extracted/page_12_img_2.jpeg','assets/images/pdf_extracted/page_13_img_2.jpeg','assets/images/pdf_extracted/page_13_img_3.jpeg','assets/images/pdf_extracted/page_13_img_4.jpeg','assets/images/pdf_extracted/page_14_img_2.jpeg','assets/images/pdf_extracted/page_14_img_3.jpeg','assets/images/pdf_extracted/page_15_img_2.jpeg','assets/images/pdf_extracted/page_15_img_3.jpeg','assets/images/pdf_extracted/page_15_img_4.jpeg','assets/images/pdf_extracted/page_16_img_2.jpeg','assets/images/pdf_extracted/page_16_img_3.jpeg','assets/images/pdf_extracted/page_16_img_4.jpeg','assets/images/pdf_extracted/page_17_img_2.jpeg','assets/images/pdf_extracted/page_17_img_3.jpeg','assets/images/pdf_extracted/page_18_img_2.jpeg','assets/images/pdf_extracted/page_18_img_3.jpeg','assets/images/pdf_extracted/page_18_img_4.jpeg','assets/images/pdf_extracted/page_19_img_2.jpeg','assets/images/pdf_extracted/page_19_img_3.jpeg','assets/images/pdf_extracted/page_20_img_1.jpeg','assets/images/pdf_extracted/page_21_img_3.jpeg','assets/images/pdf_extracted/page_22_img_1.jpeg'
+    'assets/images/pdf_extracted/page_01_img_1.jpeg','assets/images/pdf_extracted/page_01_img_2.jpeg','assets/images/pdf_extracted/page_03_img_1.jpeg','assets/images/pdf_extracted/page_04_img_1.jpeg','assets/images/pdf_extracted/page_05_img_1.jpeg','assets/images/pdf_extracted/page_06_img_1.jpeg','assets/images/pdf_extracted/page_07_img_1.jpeg','assets/images/pdf_extracted/page_08_img_2.jpeg','assets/images/pdf_extracted/page_08_img_3.jpeg','assets/images/pdf_extracted/page_09_img_2.jpeg','assets/images/pdf_extracted/page_09_img_3.jpeg','assets/images/pdf_extracted/page_09_img_4.jpeg','assets/images/pdf_extracted/page_10_img_2.jpeg','assets/images/pdf_extracted/page_10_img_3.jpeg','assets/images/pdf_extracted/page_11_img_2.jpeg','assets/images/pdf_extracted/page_11_img_3.jpeg','assets/images/pdf_extracted/page_11_img_4.jpeg','assets/images/pdf_extracted/page_12_img_2.jpeg','assets/images/pdf_extracted/page_13_img_2.jpeg','assets/images/pdf_extracted/page_13_img_3.jpeg','assets/images/pdf_extracted/page_13_img_4.jpeg','assets/images/pdf_extracted/page_14_img_2.jpeg','assets/images/pdf_extracted/page_14_img_3.jpeg','assets/images/pdf_extracted/page_15_img_2.jpeg','assets/images/pdf_extracted/page_15_img_3.jpeg','assets/images/pdf_extracted/page_15_img_4.jpeg','assets/images/pdf_extracted/page_16_img_2.jpeg','assets/images/pdf_extracted/page_16_img_3.jpeg','assets/images/pdf_extracted/page_16_img_4.jpeg','assets/images/pdf_extracted/page_17_img_2.jpeg','assets/images/pdf_extracted/page_17_img_3.jpeg','assets/images/pdf_extracted/page_18_img_2.jpeg','assets/images/pdf_extracted/page_18_img_3.jpeg','assets/images/pdf_extracted/page_18_img_4.jpeg','assets/images/pdf_extracted/page_19_img_2.jpeg','assets/images/pdf_extracted/page_19_img_3.jpeg','assets/images/pdf_extracted/page_20_img_1.jpeg','assets/images/pdf_extracted/page_21_img_3.jpeg'
   ];
   const galleryContainer = document.querySelector('#gallery-grid');
   if (galleryContainer) {
@@ -419,3 +431,4 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+

@@ -1,4 +1,4 @@
-/* Navbar improvements:
+﻿/* Navbar improvements:
    - Keep links horizontal on all pages
    - Make navbar transparent when scrolling (so it won't block content)
 */
@@ -44,6 +44,13 @@
 
 /* When nav is transparent, ensure links remain readable */
 .navbar .navbar-nav a {
-  color: rgba(255,255,255,.9) !important;
+  color: rgba(255,255,255,.9);
 }
+.navbar .navbar-nav a.active,
+.navbar .navbar-nav a:hover {
+  color: #ff751f;
+}
+
+
+
 

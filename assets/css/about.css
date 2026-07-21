@@ -1,4 +1,4 @@
-/* About page overrides (navbar should stay horizontal & not block scroll) */
+﻿/* About page overrides (navbar should stay horizontal & not block scroll) */
 
 /* Force horizontal nav for About page so it doesn't turn vertical/fixed and block scroll */
 @media (min-width: 768px) {
@@ -38,7 +38,9 @@
 /* Match other pages: restore dark-blue hero treatment for About page */
 header.page-hero {
   background: linear-gradient(120deg, rgba(3,17,31,.95), rgba(7,26,47,.8)) !important;
-  color: #f8fbff !important;
+}
+header.page-hero .eyebrow {
+  color: #ff751f;
 }
 
 /* About page background and navbar styling */
@@ -57,7 +59,14 @@ body {
 }
 
 .navbar .navbar-nav a {
-  color: rgba(255,255,255,.9) !important;
+  color: rgba(255,255,255,.9);
 }
+.navbar .navbar-nav a.active,
+.navbar .navbar-nav a:hover {
+  color: #ff751f;
+}
+
+
+
 
 

@@ -1,6 +1,6 @@
-:root {
+﻿:root {
   --admin-navy: #071a2f;
-  --admin-gold: #f29a2e;
+  --admin-gold: #ff751f;
 }
 
 /* Full-screen live background (animated gradient + subtle particles) */
@@ -15,7 +15,7 @@
 .admin-bg-live .bg-overlay {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 20% 20%, rgba(242,154,46,.25), transparent 45%),
+  background: radial-gradient(circle at 20% 20%, rgba(255,117,31,.25), transparent 45%),
               radial-gradient(circle at 80% 30%, rgba(120,170,255,.18), transparent 50%),
               radial-gradient(circle at 40% 80%, rgba(70,200,170,.14), transparent 55%),
               linear-gradient(135deg, rgba(3,17,31,.95), rgba(7,26,47,.7));
@@ -48,4 +48,7 @@
   position: relative;
   z-index: 1;
 }
+
+
+
 
