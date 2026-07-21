@@ -12,6 +12,12 @@
       body {
         min-height: 100vh;
       }
+      .container {
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 1.25rem;
+      }
       .admin-shell {
         min-height: 100vh;
         padding: 2rem 0 3rem;
@@ -142,8 +148,24 @@
       @media (max-width: 768px) {
         .admin-shell { padding: 1rem 0 2rem; }
         .admin-card { padding: 1rem; border-radius: 20px; }
-        .admin-header { flex-direction: column; align-items: flex-start; }
-        .message-top { flex-direction: column; }
+        .admin-header { flex-direction: column; align-items: flex-start; gap: .75rem; }
+        .admin-header h1 { font-size: 1.4rem; }
+        .message-top { flex-direction: column; gap: .5rem; }
+        .message-actions { flex-wrap: wrap; gap: .4rem; }
+        .message-name { font-size: 1rem; }
+        .message-meta { font-size: .82rem; }
+        .message-body { font-size: .9rem; }
+        .delete-btn { font-size: .82rem; padding: .35rem .6rem; }
+        .tag { font-size: .72rem; }
+        .pill { font-size: .85rem; padding: .45rem .8rem; }
+        .toast { right: .5rem; bottom: .5rem; left: .5rem; max-width: 100%; font-size: .9rem; }
+      }
+      @media (max-width: 480px) {
+        .admin-shell { padding: .75rem 0 1.5rem; }
+        .admin-card { padding: .85rem; border-radius: 16px; }
+        .admin-header h1 { font-size: 1.2rem; }
+        .message-item { padding: .85rem .9rem; border-radius: 14px; }
+        .eyebrow { font-size: .7rem; }
       }
     </style>
   </head>

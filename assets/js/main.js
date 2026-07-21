@@ -348,24 +348,72 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Check for form submission success (Formspree redirects with ?success=true)
+  // Check for form submission success
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('success') === 'true') {
-    const successMessage = 'Thank you for reaching out! We\'ve received your message and will reply via email or phone shortly.';
-    showFloatingNotice(successMessage, 5000);
-    // Clean up URL
+    showFloatingNotice('Thank you for reaching out! We\'ve received your message and will reply shortly.', 5000);
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
   const form = document.querySelector('#contact-form');
   if (form) {
-    form.addEventListener('submit', e => {
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
       const button = form.querySelector('button[type="submit"]');
+      const fields = {
+        name: form.querySelector('[name="name"]'),
+        email: form.querySelector('[name="email"]'),
+        phone: form.querySelector('[name="phone"]'),
+        subject: form.querySelector('[name="subject"]'),
+        message: form.querySelector('[name="message"]')
+      };
+
+      const payload = {
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        name: fields.name?.value.trim() || 'Client',
+        email: fields.email?.value.trim() || '',
+        phone: fields.phone?.value.trim() || '',
+        subject: fields.subject?.value.trim() || 'New inquiry',
+        message: fields.message?.value.trim() || '',
+        sentAt: new Date().toISOString()
+      };
+
       if (button) {
         button.disabled = true;
         button.textContent = 'Sending...';
       }
-      // Allow form to submit naturally to Formspree
+
+      try {
+        // Try Firebase first (cross-device sync)
+        let savedToFirebase = false;
+        if (initFirebase()) {
+          try {
+            await firebaseDatabase.ref('messages').push(payload);
+            savedToFirebase = true;
+          } catch (fbError) {
+            console.warn('Firebase write failed', fbError);
+          }
+        }
+        // Always save to local storage as backup
+        saveMessageToSharedInbox(payload);
+
+        showFloatingNotice('Thank you for reaching out. Please wait for our reply through email or phone call.', 5000);
+        form.reset();
+        if (button) {
+          button.textContent = 'Message Sent';
+          setTimeout(() => {
+            button.disabled = false;
+            button.textContent = 'Send Message';
+          }, 3000);
+        }
+      } catch (error) {
+        console.error('Unable to save message', error);
+        if (button) {
+          button.disabled = false;
+          button.textContent = 'Send Message';
+        }
+        showFloatingNotice('Something went wrong. Please try again or contact us directly.', 4000);
+      }
     });
   }
 
