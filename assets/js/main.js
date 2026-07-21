@@ -416,8 +416,10 @@ window.addEventListener('DOMContentLoaded', () => {
         // Redirect to home after message is sent
         console.log('Scheduling redirect in 3.5 seconds...');
         setTimeout(() => {
-          console.log('Redirecting to home page...');
-          window.location.href = window.location.origin + '/s40-construction/';
+          console.log('Executing redirect...');
+          const homeUrl = window.location.origin + '/s40-construction/index.html';
+          console.log('Redirecting to:', homeUrl);
+          window.location.replace(homeUrl);
         }, 3500);
       } catch (error) {
         console.error('Unable to save message', error);
