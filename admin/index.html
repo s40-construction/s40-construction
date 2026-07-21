@@ -445,23 +445,13 @@
 
       // --- Primary: load from Firebase and keep in sync realtime ---
       (function initFirebaseInboxRealtime() {
-        const refreshFromRemote = () => {
-          if (window.loadMessagesFromSharedInbox) {
-            window.loadMessagesFromSharedInbox((msgs) => {
-              renderMessages(msgs);
-            });
-          } else {
-            renderMessages(getLocalMessages());
-          }
-        };
-
         if (window.initFirebase) {
           window.initFirebase();
         }
 
         const db = window.firebaseDatabase;
         if (db) {
-          console.log('Setting up Firebase realtime listener...');
+          console.log('Setting up Firebase real-time listener...');
           db.ref('messages').on('value', snapshot => {
             console.log('Firebase listener triggered - children:', snapshot.numChildren());
             const remoteMessages = [];
@@ -472,18 +462,16 @@
                 id: child.key,      // Use Firebase key as message ID
                 fbKey: child.key     // Store Firebase key for deletion
               };
-              console.log('Message from Firebase:', { key: child.key, name: msg.name, fbKey: msg.fbKey });
               remoteMessages.push(msg);
             });
             remoteMessages.sort((a, b) => new Date(b.sentAt || 0) - new Date(a.sentAt || 0));
-            console.log('After sort - messages:', remoteMessages.map(m => ({ id: m.id, fbKey: m.fbKey, name: m.name })));
             syncLocalCache(remoteMessages);
             renderMessages(remoteMessages);
           });
+        } else {
+          console.warn('Firebase not available, using localStorage only');
+          renderMessages(getLocalMessages());
         }
-
-        refreshFromRemote();
-        window.setInterval(refreshFromRemote, 15000);
       })();
 
     </script>
