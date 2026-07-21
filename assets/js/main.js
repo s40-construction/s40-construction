@@ -66,7 +66,7 @@ const loadMessagesFromSharedInbox = async (callback) => {
     const snapshot = await firebaseDatabase.ref('messages').orderByChild('sentAt').once('value');
     const remoteMessages = [];
     snapshot.forEach(child => {
-      remoteMessages.push({ id: child.key, ...child.val() });
+      remoteMessages.push({ id: child.key, fbKey: child.key, ...child.val() });
     });
     remoteMessages.sort((a, b) => new Date(b.sentAt || 0) - new Date(a.sentAt || 0));
 

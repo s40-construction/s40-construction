@@ -371,7 +371,7 @@
               </div>
               <div class="message-actions">
                 <div class="message-meta">${formatDate(message.sentAt)}</div>
-                <button class="delete-btn" type="button" data-id="${message.id || ''}" data-fbkey="${message.fbKey || ''}"><i class="fa-solid fa-trash"></i> Delete</button>
+                <button class="delete-btn" type="button" data-msgid="${message.id || ''}" data-fbkey="${message.fbKey || message.id || ''}"><i class="fa-solid fa-trash"></i> Delete</button>
               </div>
             </div>
             <div class="message-tags">
@@ -403,19 +403,23 @@
         if (!button) return;
 
         const fbKey = button.getAttribute('data-fbkey');
-        const id = button.getAttribute('data-id');
+        const msgId = button.getAttribute('data-msgid');
 
-        // Delete from Firebase if we have the RTDB key, otherwise fall back to local cache
+        // Delete from Firebase using the fbKey (which is the Firebase push() key)
         if (window.firebaseDatabase && fbKey) {
           try {
             await window.firebaseDatabase.ref('messages').child(fbKey).remove();
+            showToast('Message deleted');
           } catch (error) {
             console.warn('Unable to delete message from Firebase', error);
+            showToast('Error deleting message');
           }
         } else {
-          const updated = getLocalMessages().filter(m => m.id !== id);
+          // Fallback to localStorage if no Firebase
+          const updated = getLocalMessages().filter(m => m.id !== msgId);
           syncLocalCache(updated);
           renderMessages(updated);
+          showToast('Message deleted');
         }
       });
 
