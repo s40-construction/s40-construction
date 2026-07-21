@@ -414,13 +414,13 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         
         // Redirect to home after message is sent
-        console.log('Scheduling redirect in 2.5 seconds...');
+        console.log('Scheduling redirect in 1.5 seconds...');
         setTimeout(() => {
           console.log('Executing redirect...');
           const homeUrl = window.location.origin + '/s40-construction/index.html';
           console.log('Redirecting to:', homeUrl);
           window.location.replace(homeUrl);
-        }, 2500);
+        }, 1500);
       } catch (error) {
         console.error('Unable to save message', error);
         if (button) {
