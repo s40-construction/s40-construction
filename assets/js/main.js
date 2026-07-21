@@ -407,6 +407,11 @@ window.addEventListener('DOMContentLoaded', () => {
             button.textContent = 'Send Message';
           }, 3000);
         }
+        
+        // Redirect to home after 2 seconds
+        setTimeout(() => {
+          window.location.href = '/s40-construction/';
+        }, 2000);
       } catch (error) {
         console.error('Unable to save message', error);
         if (button) {
