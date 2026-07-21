@@ -23,7 +23,10 @@ const initFirebase = () => {
       window.firebase.initializeApp(firebaseConfig);
     }
     firebaseDatabase = window.firebase.database();
+    // Expose to window so other pages can access it
+    window.firebaseDatabase = firebaseDatabase;
     firebaseReady = true;
+    console.log('Firebase initialized successfully');
     return true;
   } catch (error) {
     console.warn('Firebase initialization skipped', error);
