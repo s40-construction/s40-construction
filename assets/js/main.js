@@ -23,13 +23,11 @@ const initFirebase = () => {
       window.firebase.initializeApp(firebaseConfig);
     }
     firebaseDatabase = window.firebase.database();
-    // Expose to window so other pages can access it
     window.firebaseDatabase = firebaseDatabase;
     firebaseReady = true;
-    console.log('Firebase initialized successfully');
     return true;
   } catch (error) {
-    console.warn('Firebase initialization skipped', error);
+    console.warn('Firebase initialization failed', error);
     return false;
   }
 };
@@ -92,10 +90,10 @@ const loadMessagesFromSharedInbox = async (callback) => {
   }
 };
 
+// Export to window for use in other pages
 window.saveMessageToSharedInbox = saveMessageToSharedInbox;
 window.loadMessagesFromSharedInbox = loadMessagesFromSharedInbox;
 window.initFirebase = initFirebase;
-window.getFirebaseDatabase = () => firebaseDatabase;
 
 const showFloatingNotice = (message, timeout = 3000) => {
   let notice = document.querySelector('.contact-success-notice');

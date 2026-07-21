@@ -195,14 +195,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
     <script src="../assets/js/main.js"></script>
     <script>
-      // Initialize Firebase as soon as page loads
-      document.addEventListener('DOMContentLoaded', () => {
-        console.log('Admin: Initializing Firebase...');
-        if (typeof window.initFirebase === 'function') {
-          const success = window.initFirebase();
-          console.log('Admin: Firebase init result:', success);
-          console.log('Admin: window.firebaseDatabase available:', !!window.firebaseDatabase);
-        }
+      // Initialize Firebase on page load
+      window.addEventListener('load', () => {
+        window.initFirebase();
       });
 
       // Live admin background particles
@@ -413,58 +408,27 @@
         if (!button) return;
 
         const fbKey = button.getAttribute('data-fbkey');
-        const id = button.getAttribute('data-id');
-        
-        console.log('DELETE CLICKED - fbKey:', fbKey, 'id:', id);
-
         if (!fbKey) {
-          console.error('ERROR: fbKey is empty! Cannot delete from Firebase');
           alert('Error: Message ID missing. Please refresh and try again.');
           return;
         }
 
-        if (button) {
-          button.disabled = true;
-          button.textContent = 'Deleting...';
-        }
+        button.disabled = true;
+        button.textContent = 'Deleting...';
 
-        // Ensure Firebase is initialized
-        if (!window.firebaseDatabase && typeof window.initFirebase === 'function') {
-          console.log('Firebase not initialized, initializing now...');
-          window.initFirebase();
-        }
-
-        console.log('Checking Firebase availability. window.firebaseDatabase:', typeof window.firebaseDatabase);
-
-        // Delete from Firebase
-        if (window.firebaseDatabase) {
-          try {
-            const path = 'messages/' + fbKey;
-            console.log('Deleting from Firebase path:', path);
-            await window.firebaseDatabase.ref(path).remove();
-            console.log('✓ Firebase delete successful for:', fbKey);
-            showToast('Message deleted permanently');
-            
-            // Remove from local storage
-            const messages = getLocalMessages();
-            const updated = messages.filter(m => m.fbKey !== fbKey && m.id !== fbKey);
-            syncLocalCache(updated);
-            renderMessages(updated);
-          } catch (error) {
-            console.error('✗ Firebase delete FAILED:', error);
-            showToast('Delete failed: ' + error.message);
-            if (button) {
-              button.disabled = false;
-              button.textContent = 'Delete';
-            }
-          }
-        } else {
-          console.error('✗ Firebase DB not available (window.firebaseDatabase is:', window.firebaseDatabase, ')');
-          showToast('Firebase not available');
-          if (button) {
-            button.disabled = false;
-            button.textContent = 'Delete';
-          }
+        try {
+          await window.firebaseDatabase.ref('messages/' + fbKey).remove();
+          showToast('Message deleted permanently');
+          
+          const messages = getLocalMessages();
+          const updated = messages.filter(m => m.fbKey !== fbKey);
+          syncLocalCache(updated);
+          renderMessages(updated);
+        } catch (error) {
+          console.error('Delete failed:', error);
+          showToast('Delete failed: ' + error.message);
+          button.disabled = false;
+          button.textContent = 'Delete';
         }
       });
 
