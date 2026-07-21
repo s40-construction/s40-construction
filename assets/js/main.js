@@ -51,28 +51,18 @@ const saveMessageToSharedInbox = async (payload) => {
 
   if (initFirebase()) {
     try {
-      console.log('Pushing message to Firebase...', payload.id);
       const ref = await firebaseDatabase.ref('messages').push(payload);
-      const fbKey = ref.key;
-      console.log('Firebase push successful! Got key:', fbKey);
-      
-      // IMPORTANT: Update message with Firebase key
-      payload.fbKey = fbKey;
+      // IMPORTANT: Store the Firebase key so we can delete later
+      payload.fbKey = ref.key;
       const updated = getStoredMessages();
-      const index = updated.findIndex(m => m.id === payload.id);
-      console.log('Updating localStorage - found message at index:', index);
-      
-      if (index >= 0) {
-        updated[index] = { ...updated[index], fbKey: fbKey };
-        console.log('Setting fbKey on message:', updated[index]);
+      const idx = updated.findIndex(m => m.id === payload.id);
+      if (idx >= 0) {
+        updated[idx].fbKey = ref.key;
         saveStoredMessages(updated);
-        console.log('Firebase key saved to localStorage for:', payload.id);
       }
     } catch (error) {
-      console.error('Firebase push FAILED:', error);
+      console.warn('Unable to sync message to Firebase', error);
     }
-  } else {
-    console.warn('Firebase not initialized when saving message');
   }
 };
 
@@ -404,7 +394,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
-        // Save message (handles both localStorage and Firebase with key capture)
+        // Save to Firebase and localStorage (with key capture)
         await saveMessageToSharedInbox(payload);
 
         showFloatingNotice('Thank you for reaching out. Please wait for our reply through email or phone call.', 5000);
