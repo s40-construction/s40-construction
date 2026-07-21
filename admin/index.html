@@ -145,6 +145,49 @@
         font-size: .78rem;
         font-weight: 600;
       }
+      .admin-tabs {
+        display: flex;
+        gap: .5rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(7, 26, 47, 0.08);
+        padding-bottom: 1rem;
+      }
+      .tab-btn {
+        border: none;
+        background: transparent;
+        color: var(--steel);
+        font-weight: 600;
+        cursor: pointer;
+        padding: .5rem 1rem;
+        border-bottom: 2px solid transparent;
+        transition: all .2s ease;
+      }
+      .tab-btn.active {
+        color: var(--gold);
+        border-bottom-color: var(--gold);
+      }
+      .tab-btn:hover:not(.active) {
+        color: var(--navy-dark);
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+      .permanent-delete-btn {
+        border: none;
+        background: rgba(160, 40, 40, 0.18);
+        color: #8b1a1a;
+        border-radius: 999px;
+        padding: .45rem .7rem;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: .8rem;
+      }
+      .permanent-delete-btn:hover {
+        background: rgba(160, 40, 40, 0.28);
+      }
       @media (max-width: 768px) {
         .admin-shell { padding: 1rem 0 2rem; }
         .admin-card { padding: 1rem; border-radius: 20px; }
@@ -186,7 +229,19 @@
             </div>
             <div class="pill" id="live-pill"><i class="fa-solid fa-envelope"></i><span id="message-count">0 new messages</span></div>
           </div>
-          <div id="message-list" class="message-list"></div>
+
+          <div class="admin-tabs">
+            <button class="tab-btn active" data-tab="inbox"><i class="fa-solid fa-inbox"></i> Inbox</button>
+            <button class="tab-btn" data-tab="history"><i class="fa-solid fa-trash"></i> Delete History</button>
+          </div>
+
+          <div id="inbox-tab" class="tab-content active">
+            <div id="message-list" class="message-list"></div>
+          </div>
+
+          <div id="history-tab" class="tab-content">
+            <div id="deleted-list" class="message-list"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -309,10 +364,23 @@
       })();
 
       const storageKey = 's40-client-messages';
+      const deletedHistoryKey = 's40-deleted-messages';
       const list = document.getElementById('message-list');
+      const deletedList = document.getElementById('deleted-list');
       const countBadge = document.getElementById('message-count');
       const livePill = document.getElementById('live-pill');
       let lastMessageCount = 0;
+
+      // Tab switching
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tabName = btn.getAttribute('data-tab');
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+          btn.classList.add('active');
+          document.getElementById(tabName + '-tab').classList.add('active');
+        });
+      });
 
       function showToast(message) {
         let toast = document.querySelector('.toast');
@@ -391,6 +459,33 @@
         }
       }
 
+      function renderDeletedMessages() {
+        const deleted = getDeletedMessages();
+        if (!deleted.length) {
+          deletedList.innerHTML = '<div class="empty-state"><i class="fa-solid fa-inbox"></i><p>No deleted messages in history.</p></div>';
+          return;
+        }
+
+        deletedList.innerHTML = deleted.map(message => `
+          <article class="message-item">
+            <div class="message-top">
+              <div>
+                <div class="message-name">${message.name || 'Client'}</div>
+                <div class="message-meta">${message.email || 'No email provided'} - ${message.phone || 'No phone provided'}</div>
+              </div>
+              <div class="message-actions">
+                <div class="message-meta">${formatDate(message.sentAt)}</div>
+                <button class="permanent-delete-btn" type="button" data-msgid="${message.id || ''}"><i class="fa-solid fa-fire"></i> Permanently Delete</button>
+              </div>
+            </div>
+            <div class="message-tags">
+              <span class="tag">${message.subject || 'New inquiry'}</span>
+            </div>
+            <p class="message-body">${message.message || 'No message content provided.'}</p>
+          </article>
+        `).join('');
+      }
+
       function getLocalMessages() {
         try {
           return JSON.parse(localStorage.getItem(storageKey) || '[]');
@@ -399,33 +494,69 @@
         }
       }
 
+      function getDeletedMessages() {
+        try {
+          return JSON.parse(localStorage.getItem(deletedHistoryKey) || '[]');
+        } catch {
+          return [];
+        }
+      }
+
+      function saveDeletedMessages(messages) {
+        try {
+          localStorage.setItem(deletedHistoryKey, JSON.stringify(messages || []));
+        } catch {
+          // ignore
+        }
+      }
+
       list.addEventListener('click', async event => {
-        const button = event.target.closest('.delete-btn');
-        if (!button) return;
+        const deleteBtn = event.target.closest('.delete-btn');
+        const permDeleteBtn = event.target.closest('.permanent-delete-btn');
 
-        const fbKey = button.getAttribute('data-fbkey');
-        const msgId = button.getAttribute('data-msgid');
-        
-        console.log('Delete clicked - fbKey:', fbKey, 'msgId:', msgId);
+        if (deleteBtn) {
+          const fbKey = deleteBtn.getAttribute('data-fbkey');
+          const msgId = deleteBtn.getAttribute('data-msgid');
+          
+          console.log('Delete to history - fbKey:', fbKey, 'msgId:', msgId);
 
-        // Delete from Firebase using the fbKey (which is the Firebase push() key)
-        if (window.firebaseDatabase && fbKey) {
-          try {
-            console.log('Attempting Firebase delete for key:', fbKey);
-            await window.firebaseDatabase.ref('messages').child(fbKey).remove();
-            console.log('Firebase delete successful');
-            showToast('Message deleted');
-          } catch (error) {
-            console.error('Unable to delete message from Firebase', error);
-            showToast('Error deleting message');
+          // Move to deleted history instead of permanently deleting
+          const messages = getLocalMessages();
+          const messageToDelete = messages.find(m => m.id === msgId);
+          
+          if (messageToDelete) {
+            // Move to deleted history
+            const deleted = getDeletedMessages();
+            deleted.unshift(messageToDelete);
+            saveDeletedMessages(deleted);
+            
+            // Remove from inbox
+            const updated = messages.filter(m => m.id !== msgId);
+            syncLocalCache(updated);
+            renderMessages(updated);
+            
+            // Also delete from Firebase
+            if (window.firebaseDatabase && fbKey) {
+              try {
+                await window.firebaseDatabase.ref('messages').child(fbKey).remove();
+              } catch (error) {
+                console.warn('Firebase delete failed', error);
+              }
+            }
+            
+            showToast('Message moved to delete history');
           }
-        } else {
-          console.log('No Firebase DB or fbKey, using localStorage fallback');
-          // Fallback to localStorage if no Firebase
-          const updated = getLocalMessages().filter(m => m.id !== msgId);
-          syncLocalCache(updated);
-          renderMessages(updated);
-          showToast('Message deleted');
+        }
+
+        if (permDeleteBtn) {
+          const msgId = permDeleteBtn.getAttribute('data-msgid');
+          
+          // Permanently delete from history
+          const deleted = getDeletedMessages();
+          const updated = deleted.filter(m => m.id !== msgId);
+          saveDeletedMessages(updated);
+          renderDeletedMessages();
+          showToast('Message permanently deleted');
         }
       });
 
@@ -439,6 +570,7 @@
           } else {
             renderMessages(getLocalMessages());
           }
+          renderDeletedMessages();
         };
 
         if (window.initFirebase) {
