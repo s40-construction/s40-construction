@@ -195,6 +195,17 @@
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
     <script src="../assets/js/main.js"></script>
     <script>
+      // Initialize Firebase immediately
+      if (!window.firebaseDatabase) {
+        console.log('Admin: Initializing Firebase...');
+        if (window.initFirebase) {
+          window.initFirebase();
+          console.log('Admin: Firebase initialized, DB:', !!window.firebaseDatabase);
+        } else {
+          console.error('Admin: initFirebase function not found');
+        }
+      }
+
       // Live admin background particles
       (function initAdminParticles() {
         const canvas = document.getElementById('admin-bg-canvas');
@@ -420,7 +431,17 @@
           button.textContent = 'Deleting...';
         }
 
-        // Delete from Firebase FIRST (don't modify UI yet)
+        // Ensure Firebase is initialized
+        if (!window.firebaseDatabase) {
+          console.log('Firebase not initialized, attempting to initialize...');
+          if (window.initFirebase && typeof window.initFirebase === 'function') {
+            window.initFirebase();
+          }
+        }
+
+        console.log('Firebase DB available:', !!window.firebaseDatabase);
+
+        // Delete from Firebase
         if (window.firebaseDatabase) {
           try {
             console.log('Deleting from Firebase at path: messages/' + fbKey);
@@ -430,7 +451,7 @@
             
             // Remove from local storage
             const messages = getLocalMessages();
-            const updated = messages.filter(m => m.id !== fbKey);  // Filter by Firebase key
+            const updated = messages.filter(m => m.id !== fbKey);
             syncLocalCache(updated);
             renderMessages(updated);
           } catch (error) {
@@ -442,8 +463,8 @@
             }
           }
         } else {
-          console.warn('Firebase DB not available');
-          showToast('Firebase not available');
+          console.error('Firebase DB is still not available after init attempt');
+          showToast('Firebase connection failed - please try again');
           if (button) {
             button.disabled = false;
             button.textContent = 'Delete';
