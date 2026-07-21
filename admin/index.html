@@ -404,9 +404,23 @@
 
         const fbKey = button.getAttribute('data-fbkey');
         const id = button.getAttribute('data-id');
+        
+        console.log('DELETE CLICKED');
+        console.log('  fbKey from button:', fbKey);
+        console.log('  id from button:', id);
+        console.log('  button HTML:', button.outerHTML);
+
+        if (!fbKey) {
+          console.error('ERROR: fbKey is empty! Cannot delete from Firebase');
+          alert('Error: Message ID missing. Please refresh and try again.');
+          return;
+        }
 
         // Remove from UI immediately
         const messages = getLocalMessages();
+        console.log('Current messages in localStorage:', messages.length);
+        console.log('All message keys:', messages.map(m => ({ id: m.id, fbKey: m.fbKey, name: m.name })));
+        
         const updated = messages.filter(m => m.id !== id);
         syncLocalCache(updated);
         renderMessages(updated);
@@ -414,15 +428,18 @@
         // Delete from Firebase if we have the RTDB key
         if (window.firebaseDatabase && fbKey) {
           try {
+            console.log('Deleting from Firebase at path: messages/' + fbKey);
             await window.firebaseDatabase.ref('messages/' + fbKey).remove();
+            console.log('✓ Firebase delete successful');
             showToast('Message deleted');
           } catch (error) {
-            console.warn('Unable to delete message from Firebase', error);
+            console.error('✗ Firebase delete FAILED:', error);
             showToast('Delete failed - trying to recover...');
             // Re-render to show message again if delete failed
             renderMessages(messages);
           }
         } else {
+          console.warn('No Firebase DB or fbKey');
           showToast('Message deleted from local storage');
         }
       });
@@ -445,12 +462,22 @@
 
         const db = window.getFirebaseDatabase ? window.getFirebaseDatabase() : null;
         if (db) {
+          console.log('Setting up Firebase realtime listener...');
           db.ref('messages').orderByChild('sentAt').on('value', snapshot => {
+            console.log('Firebase listener triggered - children:', snapshot.numChildren());
             const remoteMessages = [];
             snapshot.forEach(child => {
-              remoteMessages.push({ id: child.key, fbKey: child.key, ...child.val() });
+              const data = child.val();
+              const msg = {
+                ...data,
+                id: child.key,      // Use Firebase key as message ID
+                fbKey: child.key     // Store Firebase key for deletion
+              };
+              console.log('Message from Firebase:', { key: child.key, name: msg.name, fbKey: msg.fbKey });
+              remoteMessages.push(msg);
             });
             remoteMessages.sort((a, b) => new Date(b.sentAt || 0) - new Date(a.sentAt || 0));
+            console.log('After sort - messages:', remoteMessages.map(m => ({ id: m.id, fbKey: m.fbKey, name: m.name })));
             syncLocalCache(remoteMessages);
             renderMessages(remoteMessages);
           });
