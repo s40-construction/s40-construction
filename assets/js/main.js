@@ -46,13 +46,17 @@ const saveStoredMessages = (messages) => {
 };
 
 const saveMessageToSharedInbox = async (payload) => {
+  console.log('saveMessageToSharedInbox called with payload:', payload.id);
   const existing = getStoredMessages();
   existing.unshift(payload);
   saveStoredMessages(existing);
+  console.log('Message saved to localStorage');
 
   if (initFirebase()) {
+    console.log('Firebase initialized, pushing to database...');
     try {
       const ref = await firebaseDatabase.ref('messages').push(payload);
+      console.log('Message pushed to Firebase with key:', ref.key);
       // IMPORTANT: Store the Firebase key so we can delete later
       payload.fbKey = ref.key;
       const updated = getStoredMessages();
@@ -60,10 +64,13 @@ const saveMessageToSharedInbox = async (payload) => {
       if (idx >= 0) {
         updated[idx].fbKey = ref.key;
         saveStoredMessages(updated);
+        console.log('Firebase key saved to localStorage');
       }
     } catch (error) {
       console.warn('Unable to sync message to Firebase', error);
     }
+  } else {
+    console.log('Firebase not initialized, message saved to localStorage only');
   }
 };
 
@@ -396,7 +403,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
       try {
         // Save to Firebase and localStorage (with key capture)
+        console.log('Saving message...');
         await saveMessageToSharedInbox(payload);
+        console.log('Message saved successfully');
 
         showFloatingNotice('Thank you for reaching out. Please wait for our reply through email or phone call.', 5000);
         form.reset();
@@ -404,9 +413,11 @@ window.addEventListener('DOMContentLoaded', () => {
           button.textContent = 'Message Sent';
         }
         
-        // Redirect to home after message is sent (3.5 seconds to show message)
+        // Redirect to home after message is sent
+        console.log('Scheduling redirect in 3.5 seconds...');
         setTimeout(() => {
-          window.location.href = '/s40-construction/index.html';
+          console.log('Redirecting to home page...');
+          window.location.href = window.location.origin + '/s40-construction/';
         }, 3500);
       } catch (error) {
         console.error('Unable to save message', error);
