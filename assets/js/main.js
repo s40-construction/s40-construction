@@ -52,6 +52,7 @@ const saveMessageToSharedInbox = async (payload) => {
   if (initFirebase()) {
     try {
       const ref = await firebaseDatabase.ref('messages').push(payload);
+      console.log('Message saved to Firebase with key:', ref.key);
       // Update the message in localStorage with the Firebase key
       payload.fbKey = ref.key;
       const updated = getStoredMessages();
@@ -59,6 +60,7 @@ const saveMessageToSharedInbox = async (payload) => {
       if (index >= 0) {
         updated[index].fbKey = ref.key;
         saveStoredMessages(updated);
+        console.log('Firebase key captured in localStorage for message:', payload.id);
       }
     } catch (error) {
       console.warn('Unable to sync message to Firebase', error);

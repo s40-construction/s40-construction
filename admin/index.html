@@ -350,6 +350,7 @@
       function renderMessages(messages) {
         const safe = Array.isArray(messages) ? messages : [];
         const currentCount = safe.length;
+        console.log('Rendering', currentCount, 'messages:', safe.map(m => ({ id: m.id, fbKey: m.fbKey, name: m.name })));
         updateLiveBadge(currentCount);
 
         if (currentCount > lastMessageCount && lastMessageCount !== 0) {
@@ -404,17 +405,22 @@
 
         const fbKey = button.getAttribute('data-fbkey');
         const msgId = button.getAttribute('data-msgid');
+        
+        console.log('Delete clicked - fbKey:', fbKey, 'msgId:', msgId);
 
         // Delete from Firebase using the fbKey (which is the Firebase push() key)
         if (window.firebaseDatabase && fbKey) {
           try {
+            console.log('Attempting Firebase delete for key:', fbKey);
             await window.firebaseDatabase.ref('messages').child(fbKey).remove();
+            console.log('Firebase delete successful');
             showToast('Message deleted');
           } catch (error) {
-            console.warn('Unable to delete message from Firebase', error);
+            console.error('Unable to delete message from Firebase', error);
             showToast('Error deleting message');
           }
         } else {
+          console.log('No Firebase DB or fbKey, using localStorage fallback');
           // Fallback to localStorage if no Firebase
           const updated = getLocalMessages().filter(m => m.id !== msgId);
           syncLocalCache(updated);
