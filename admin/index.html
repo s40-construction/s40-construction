@@ -145,6 +145,98 @@
         font-size: .78rem;
         font-weight: 600;
       }
+      .auth-gate {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        padding: 1rem;
+        background: rgba(3, 17, 31, 0.86);
+        backdrop-filter: blur(6px);
+      }
+      .auth-gate.hidden {
+        display: none;
+      }
+      .auth-card {
+        width: min(100%, 420px);
+        border-radius: 22px;
+        padding: 1.3rem;
+        background: #fff;
+        box-shadow: 0 20px 50px rgba(7, 26, 47, 0.26);
+      }
+      .auth-card h2 {
+        margin: 0;
+        color: var(--navy-dark);
+      }
+      .auth-card p {
+        margin: .45rem 0 1rem;
+        color: var(--steel);
+        line-height: 1.6;
+      }
+      .auth-card label {
+        display: block;
+        font-size: .88rem;
+        color: var(--navy-dark);
+        margin-bottom: .35rem;
+        font-weight: 600;
+      }
+      .auth-card input {
+        width: 100%;
+        padding: .72rem .78rem;
+        border-radius: 12px;
+        border: 1px solid rgba(7, 26, 47, 0.2);
+        margin-bottom: .8rem;
+      }
+      .auth-card input:focus {
+        outline: 2px solid rgba(255, 117, 31, 0.22);
+        border-color: rgba(255, 117, 31, 0.5);
+      }
+      .auth-submit {
+        width: 100%;
+        border: none;
+        border-radius: 12px;
+        padding: .75rem 1rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #ff751f, #ff8f49);
+        color: #112338;
+        cursor: pointer;
+      }
+      .auth-submit:disabled {
+        opacity: .7;
+        cursor: not-allowed;
+      }
+      .auth-error {
+        min-height: 1.2rem;
+        color: #b42318;
+        font-size: .85rem;
+        margin: 0 0 .6rem;
+      }
+      .auth-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        margin-top: .4rem;
+      }
+      .admin-user {
+        font-size: .83rem;
+        color: var(--steel);
+      }
+      .logout-btn {
+        border: 1px solid rgba(7, 26, 47, 0.14);
+        background: rgba(255, 255, 255, 0.8);
+        color: var(--navy-dark);
+        border-radius: 999px;
+        padding: .42rem .75rem;
+        font-size: .8rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .logout-btn:hover {
+        border-color: rgba(255, 117, 31, 0.48);
+        color: #a74f13;
+      }
       @media (max-width: 768px) {
         .admin-shell { padding: 1rem 0 2rem; }
         .admin-card { padding: 1rem; border-radius: 20px; }
@@ -175,6 +267,22 @@
       <canvas id="admin-bg-canvas"></canvas>
     </div>
 
+    <div id="auth-gate" class="auth-gate">
+      <div class="auth-card">
+        <div class="eyebrow">Admin Access</div>
+        <h2>Secure Sign In</h2>
+        <p>Sign in with your Firebase admin account to view and manage inbox data.</p>
+        <form id="admin-login-form" autocomplete="on">
+          <label for="admin-email">Email</label>
+          <input id="admin-email" name="email" type="email" required />
+          <label for="admin-password">Password</label>
+          <input id="admin-password" name="password" type="password" required />
+          <div id="auth-error" class="auth-error"></div>
+          <button id="auth-submit" class="auth-submit" type="submit">Sign In</button>
+        </form>
+      </div>
+    </div>
+
     <div class="admin-shell">
       <div class="container">
         <div class="admin-card">
@@ -183,6 +291,10 @@
             <div>
               <div class="eyebrow">Admin Dashboard</div>
               <h1>Client Messages Inbox</h1>
+              <div class="auth-row">
+                <div id="admin-user" class="admin-user">Not signed in</div>
+                <button id="admin-logout" class="logout-btn" type="button" hidden>Sign out</button>
+              </div>
             </div>
             <div class="pill" id="live-pill"><i class="fa-solid fa-envelope"></i><span id="message-count">0 new messages</span></div>
           </div>
@@ -193,6 +305,7 @@
 
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
     <script src="../assets/js/main.js"></script>
     <script>
       // Initialize Firebase immediately (don't wait for load)
@@ -317,7 +430,29 @@
       const list = document.getElementById('message-list');
       const countBadge = document.getElementById('message-count');
       const livePill = document.getElementById('live-pill');
+      const authGate = document.getElementById('auth-gate');
+      const loginForm = document.getElementById('admin-login-form');
+      const authError = document.getElementById('auth-error');
+      const authSubmit = document.getElementById('auth-submit');
+      const adminUser = document.getElementById('admin-user');
+      const logoutBtn = document.getElementById('admin-logout');
       let lastMessageCount = 0;
+      let authReady = false;
+      let dbValueListener = null;
+
+      const setAuthError = (message) => {
+        if (authError) authError.textContent = message || '';
+      };
+
+      const setAuthGateVisible = (visible) => {
+        if (!authGate) return;
+        authGate.classList.toggle('hidden', !visible);
+      };
+
+      const setAdminUserText = (user) => {
+        if (!adminUser) return;
+        adminUser.textContent = user?.email ? `Signed in: ${user.email}` : 'Not signed in';
+      };
 
       function showToast(message) {
         let toast = document.querySelector('.toast');
@@ -403,9 +538,40 @@
         }
       }
 
+      function stopRealtimeInboxListener() {
+        if (!window.firebaseDatabase || !dbValueListener) return;
+        window.firebaseDatabase.ref('messages').off('value', dbValueListener);
+        dbValueListener = null;
+      }
+
+      function startRealtimeInboxListener() {
+        if (!window.firebaseDatabase || dbValueListener) return;
+        dbValueListener = snapshot => {
+          const remoteMessages = [];
+          snapshot.forEach(child => {
+            const data = child.val();
+            const msg = {
+              ...data,
+              id: child.key,
+              fbKey: child.key
+            };
+            remoteMessages.push(msg);
+          });
+          remoteMessages.sort((a, b) => new Date(b.sentAt || 0) - new Date(a.sentAt || 0));
+          syncLocalCache(remoteMessages);
+          renderMessages(remoteMessages);
+        };
+        window.firebaseDatabase.ref('messages').on('value', dbValueListener);
+      }
+
       list.addEventListener('click', async event => {
         const button = event.target.closest('.delete-btn');
         if (!button) return;
+
+        if (!authReady || !window.firebase?.auth || !window.firebase.auth().currentUser) {
+          showToast('Sign in required before deleting messages');
+          return;
+        }
 
         const fbKey = button.getAttribute('data-fbkey');
         if (!fbKey) {
@@ -443,35 +609,73 @@
         }
       });
 
-      // --- Primary: load from Firebase and keep in sync realtime ---
-      (function initFirebaseInboxRealtime() {
+      logoutBtn?.addEventListener('click', async () => {
+        setAuthError('');
+        try {
+          await window.firebase.auth().signOut();
+          showToast('Signed out successfully');
+        } catch (error) {
+          showToast('Sign out failed');
+          console.error('Sign out failed:', error);
+        }
+      });
+
+      loginForm?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        setAuthError('');
+
+        if (!window.firebase?.auth) {
+          setAuthError('Authentication service unavailable. Refresh and try again.');
+          return;
+        }
+
+        const email = document.getElementById('admin-email')?.value?.trim() || '';
+        const password = document.getElementById('admin-password')?.value || '';
+
+        authSubmit.disabled = true;
+        authSubmit.textContent = 'Signing in...';
+        try {
+          await window.firebase.auth().signInWithEmailAndPassword(email, password);
+          setAuthError('');
+        } catch (error) {
+          setAuthError('Sign in failed. Check your admin credentials.');
+          console.error('Admin sign in failed:', error);
+        } finally {
+          authSubmit.disabled = false;
+          authSubmit.textContent = 'Sign In';
+        }
+      });
+
+      (function initAdminAuthAndInbox() {
         if (window.initFirebase) {
           window.initFirebase();
         }
 
-        const db = window.firebaseDatabase;
-        if (db) {
-          console.log('Setting up Firebase real-time listener...');
-          db.ref('messages').on('value', snapshot => {
-            console.log('Firebase listener triggered - children:', snapshot.numChildren());
-            const remoteMessages = [];
-            snapshot.forEach(child => {
-              const data = child.val();
-              const msg = {
-                ...data,
-                id: child.key,      // Use Firebase key as message ID
-                fbKey: child.key     // Store Firebase key for deletion
-              };
-              remoteMessages.push(msg);
-            });
-            remoteMessages.sort((a, b) => new Date(b.sentAt || 0) - new Date(a.sentAt || 0));
-            syncLocalCache(remoteMessages);
-            renderMessages(remoteMessages);
-          });
-        } else {
-          console.warn('Firebase not available, using localStorage only');
-          renderMessages(getLocalMessages());
+        if (!window.firebase?.auth) {
+          setAuthGateVisible(true);
+          setAuthError('Firebase Auth is not available in this session.');
+          renderMessages([]);
+          return;
         }
+
+        window.firebase.auth().onAuthStateChanged((user) => {
+          authReady = !!user;
+          setAdminUserText(user);
+          logoutBtn.hidden = !user;
+
+          if (user) {
+            setAuthGateVisible(false);
+            if (!window.firebaseDatabase && window.initFirebase) {
+              window.initFirebase();
+            }
+            startRealtimeInboxListener();
+            showToast('Admin authenticated');
+          } else {
+            stopRealtimeInboxListener();
+            setAuthGateVisible(true);
+            renderMessages([]);
+          }
+        });
       })();
 
     </script>

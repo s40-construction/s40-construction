@@ -467,6 +467,22 @@ textarea.form-control { min-height: 140px; resize: vertical; }
 .page-card h2 { color: var(--navy-dark); margin-bottom: 1rem; }
 .page-card p, .page-card li { color: var(--steel); line-height: 1.8; }
 
+/* ── GSAP ScrollTrigger card styles (shared across all pages) ── */
+.gsap-card { will-change: opacity, transform; }
+.gsap-card h2 { position: relative; display: inline-block; }
+.gsap-card h2::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 3px;
+  background: #ff751f;
+  transform-origin: left center;
+  transform: scaleX(var(--line-scale, 1));
+  border-radius: 2px;
+}
+
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes scrollDown { 0% { transform: translate(-50%, 0); opacity: 0; } 50% { opacity: 1; } 100% { transform: translate(-50%, 16px); opacity: 0; } }
 @keyframes floatUp { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
