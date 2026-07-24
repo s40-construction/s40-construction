@@ -16,6 +16,131 @@ const isFirebaseConfigured = () => {
 let firebaseDatabase = null;
 let firebaseReady = false;
 
+const notificationConfig = {
+  adminEmail: 'enquiry.s40@gmail.com',
+  emailJs: {
+    publicKey: 'U8Kgit29HfmPPGYl3',
+    serviceId: 'service_szerwvs',
+    adminTemplateId: 'template_6ykz0n2',
+    userTemplateId: 'template_38a8oj5'
+  }
+};
+
+const extractEmailsFromText = (value) => {
+  if (!value || typeof value !== 'string') return [];
+  const matches = value.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || [];
+  return matches.map(email => email.trim().toLowerCase());
+};
+
+const getAdminRecipients = (payload) => {
+  const configured = extractEmailsFromText(notificationConfig.adminEmail);
+  const fromMessage = extractEmailsFromText(`${payload?.subject || ''} ${payload?.message || ''}`);
+  const all = [...configured, ...fromMessage].filter(isValidEmailFormat);
+  const unique = Array.from(new Set(all));
+  return unique.length ? unique : ['enquiry.s40@gmail.com'];
+};
+
+let emailJsReady = false;
+
+const isEmailJsConfigured = () => {
+  const cfg = notificationConfig.emailJs;
+  const hasValue = value => typeof value === 'string' && value && !value.includes('YOUR_EMAILJS_');
+  return hasValue(cfg.publicKey) && hasValue(cfg.serviceId) && hasValue(cfg.adminTemplateId) && hasValue(cfg.userTemplateId);
+};
+
+const initEmailJs = () => {
+  if (!window.emailjs) {
+    throw new Error('EmailJS SDK not loaded.');
+  }
+  if (!isEmailJsConfigured()) {
+    throw new Error('EmailJS credentials are not configured in assets/js/main.js');
+  }
+  if (!emailJsReady) {
+    window.emailjs.init({ publicKey: notificationConfig.emailJs.publicKey });
+    emailJsReady = true;
+  }
+};
+
+const isValidEmailFormat = (email) => {
+  if (!email || typeof email !== 'string') return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+};
+
+const verifyEmailDomainHasMx = async (email) => {
+  const domain = (email.split('@')[1] || '').toLowerCase();
+  if (!domain) return false;
+
+  try {
+    const response = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=MX`);
+    if (!response.ok) return false;
+    const data = await response.json();
+    return Array.isArray(data?.Answer) && data.Answer.some(record => Number(record.type) === 15);
+  } catch {
+    return false;
+  }
+};
+
+const validateRecipientEmail = async (email) => {
+  const normalized = (email || '').trim().toLowerCase();
+  if (!isValidEmailFormat(normalized)) {
+    return { ok: false, reason: 'invalid-format' };
+  }
+
+  const hasMx = await verifyEmailDomainHasMx(normalized);
+  if (!hasMx) {
+    return { ok: false, reason: 'mx-not-found' };
+  }
+
+  return { ok: true, email: normalized };
+};
+
+const sendNotificationEmails = async (payload) => {
+  initEmailJs();
+
+  const serviceId = notificationConfig.emailJs.serviceId;
+  const adminTemplateId = notificationConfig.emailJs.adminTemplateId;
+  const userTemplateId = notificationConfig.emailJs.userTemplateId;
+
+  const adminRecipients = getAdminRecipients(payload);
+
+  const adminEmailJobs = adminRecipients.map((recipient) => {
+    const adminParams = {
+      to_email: recipient,
+      email_subject: 'New message',
+      from_name: payload.name || 'Client',
+      from_email: payload.email,
+      from_phone: payload.phone || 'N/A',
+      inquiry_subject: payload.subject || 'New inquiry',
+      message: payload.message || 'No message content provided.',
+      sent_at: payload.sentAt,
+      name: payload.name || 'Client',
+      email: payload.email,
+      phone: payload.phone || 'N/A',
+      title: payload.subject || 'New inquiry',
+      time: payload.sentAt
+    };
+
+    return window.emailjs.send(serviceId, adminTemplateId, adminParams);
+  });
+
+  const userParams = {
+    to_email: payload.email,
+    to_name: payload.name || 'Client',
+    email_subject: 'Admin received your message',
+    confirmation_message: 'Admin received your message. Wait for their response.',
+    admin_email: adminRecipients.join(', '),
+    name: payload.name || 'Client',
+    email: payload.email,
+    title: payload.subject || 'New inquiry',
+    time: payload.sentAt
+  };
+
+  await Promise.all([
+    ...adminEmailJobs,
+    window.emailjs.send(serviceId, userTemplateId, userParams)
+  ]);
+};
+
 const initFirebase = () => {
   if (!isFirebaseConfigured() || firebaseReady || !window.firebase) return false;
   try {
@@ -402,10 +527,30 @@ window.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
+        const emailValidation = await validateRecipientEmail(payload.email);
+        if (!emailValidation.ok) {
+          if (button) {
+            button.disabled = false;
+            button.textContent = 'Send Message';
+          }
+
+          if (emailValidation.reason === 'invalid-format') {
+            showFloatingNotice('Please enter a valid email address before sending.', 5000);
+          } else {
+            showFloatingNotice('Email domain is not valid/reachable. Please use an existing email address.', 5000);
+          }
+          return;
+        }
+
+        payload.email = emailValidation.email;
+
         // Save to Firebase and localStorage (with key capture)
         console.log('Saving message...');
         await saveMessageToSharedInbox(payload);
         console.log('Message saved successfully');
+
+        await sendNotificationEmails(payload);
+        console.log('Admin and user email notifications sent.');
 
         showFloatingNotice('Thank you for reaching out. Please wait for our reply through email or phone call.', 5000);
         form.reset();
@@ -427,7 +572,15 @@ window.addEventListener('DOMContentLoaded', () => {
           button.disabled = false;
           button.textContent = 'Send Message';
         }
-        showFloatingNotice('Something went wrong. Please try again or contact us directly.', 4000);
+
+        const message = String(error?.message || '');
+        if (message.includes('EmailJS credentials are not configured')) {
+          showFloatingNotice('Email notification is not configured yet. Please set EmailJS keys/template IDs in assets/js/main.js.', 6500);
+        } else if (message.includes('EmailJS SDK not loaded')) {
+          showFloatingNotice('Email notification service failed to load. Refresh page and try again.', 5500);
+        } else {
+          showFloatingNotice('Something went wrong. Please try again or contact us directly.', 4000);
+        }
       }
     });
   }
