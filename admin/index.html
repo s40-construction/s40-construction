@@ -206,6 +206,18 @@
         opacity: .7;
         cursor: not-allowed;
       }
+      .auth-forgot {
+        margin-top: .65rem;
+        display: inline-block;
+        border: none;
+        background: transparent;
+        color: #175cd3;
+        font-size: .86rem;
+        font-weight: 600;
+        padding: 0;
+        cursor: pointer;
+        text-decoration: underline;
+      }
       .auth-error {
         min-height: 1.2rem;
         color: #b42318;
@@ -279,6 +291,7 @@
           <input id="admin-password" name="password" type="password" required />
           <div id="auth-error" class="auth-error"></div>
           <button id="auth-submit" class="auth-submit" type="submit">Sign In</button>
+          <button id="forgot-password-btn" class="auth-forgot" type="button">Forgot password?</button>
         </form>
       </div>
     </div>
@@ -434,6 +447,7 @@
       const loginForm = document.getElementById('admin-login-form');
       const authError = document.getElementById('auth-error');
       const authSubmit = document.getElementById('auth-submit');
+      const forgotPasswordBtn = document.getElementById('forgot-password-btn');
       const adminUser = document.getElementById('admin-user');
       const logoutBtn = document.getElementById('admin-logout');
       let lastMessageCount = 0;
@@ -638,11 +652,68 @@
           await window.firebase.auth().signInWithEmailAndPassword(email, password);
           setAuthError('');
         } catch (error) {
-          setAuthError('Sign in failed. Check your admin credentials.');
-          console.error('Admin sign in failed:', error);
+          const code = error?.code || '';
+          if (code === 'auth/invalid-email') {
+            setAuthError('Email format is invalid. Please correct it and try again.');
+          } else if (code === 'auth/user-not-found') {
+            setAuthError('No account found for this email in Firebase Auth.');
+          } else if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+            setAuthError('Incorrect password. Use Forgot password to reset it.');
+          } else if (code === 'auth/too-many-requests') {
+            setAuthError('Too many failed attempts. Wait a few minutes, then try again.');
+          } else if (code === 'auth/network-request-failed') {
+            setAuthError('Network error. Check internet connection and try again.');
+          } else {
+            setAuthError(`Sign in failed (${code || 'unknown error'}).`);
+          }
+          console.error('Admin sign in failed:', error?.code, error?.message);
         } finally {
           authSubmit.disabled = false;
           authSubmit.textContent = 'Sign In';
+        }
+      });
+
+      forgotPasswordBtn?.addEventListener('click', async () => {
+        setAuthError('');
+
+        if (!window.firebase?.auth) {
+          setAuthError('Authentication service unavailable. Refresh and try again.');
+          return;
+        }
+
+        const email = document.getElementById('admin-email')?.value?.trim() || '';
+        if (!email) {
+          setAuthError('Enter your admin email first, then click Forgot password.');
+          return;
+        }
+
+        forgotPasswordBtn.disabled = true;
+        const originalText = forgotPasswordBtn.textContent;
+        forgotPasswordBtn.textContent = 'Sending reset link...';
+
+        try {
+          await window.firebase.auth().sendPasswordResetEmail(email);
+          showToast('Password reset email sent. Check your inbox.');
+        } catch (error) {
+          console.error('Password reset failed:', error?.code, error?.message);
+
+          const code = error?.code || '';
+          if (code === 'auth/user-not-found') {
+            setAuthError('No Firebase account found for this email. Check spelling or create this admin user first.');
+          } else if (code === 'auth/invalid-email') {
+            setAuthError('Email format is invalid. Please correct it and try again.');
+          } else if (code === 'auth/operation-not-allowed') {
+            setAuthError('Email/Password sign-in is disabled in Firebase Auth. Enable it in Authentication > Sign-in method.');
+          } else if (code === 'auth/too-many-requests') {
+            setAuthError('Too many attempts. Wait a few minutes, then try again.');
+          } else if (code === 'auth/network-request-failed') {
+            setAuthError('Network error while sending reset email. Check internet and try again.');
+          } else {
+            setAuthError(`Password reset failed (${code || 'unknown error'}). Open console for details.`);
+          }
+        } finally {
+          forgotPasswordBtn.disabled = false;
+          forgotPasswordBtn.textContent = originalText;
         }
       });
 
