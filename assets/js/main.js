@@ -34,9 +34,7 @@ const extractEmailsFromText = (value) => {
 
 const getAdminRecipients = (payload) => {
   const configured = extractEmailsFromText(notificationConfig.adminEmail);
-  const fromMessage = extractEmailsFromText(`${payload?.subject || ''} ${payload?.message || ''}`);
-  const all = [...configured, ...fromMessage].filter(isValidEmailFormat);
-  const unique = Array.from(new Set(all));
+  const unique = Array.from(new Set(configured.filter(isValidEmailFormat)));
   return unique.length ? unique : ['enquiry.s40@gmail.com'];
 };
 
