@@ -92,6 +92,18 @@ const validateRecipientEmail = async (email) => {
   return { ok: true, email: normalized };
 };
 
+const getErrorText = (error) => {
+  if (!error) return 'Unknown error';
+  if (typeof error === 'string') return error;
+  if (typeof error.text === 'string' && error.text) return error.text;
+  if (typeof error.message === 'string' && error.message) return error.message;
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return 'Unknown error';
+  }
+};
+
 const sendNotificationEmails = async (payload) => {
   initEmailJs();
 
@@ -133,10 +145,28 @@ const sendNotificationEmails = async (payload) => {
     time: payload.sentAt
   };
 
-  await Promise.all([
-    ...adminEmailJobs,
-    window.emailjs.send(serviceId, userTemplateId, userParams)
-  ]);
+  const adminResults = await Promise.allSettled(adminEmailJobs);
+  const adminSentCount = adminResults.filter(result => result.status === 'fulfilled').length;
+  if (adminSentCount === 0) {
+    const adminReasons = adminResults
+      .filter(result => result.status === 'rejected')
+      .map(result => getErrorText(result.reason));
+    throw new Error(`Admin email notification failed: ${adminReasons.join(' | ') || 'Unknown EmailJS error'}`);
+  }
+
+  let userWarning = '';
+  try {
+    await window.emailjs.send(serviceId, userTemplateId, userParams);
+  } catch (error) {
+    userWarning = getErrorText(error);
+    console.warn('User confirmation email failed:', error);
+  }
+
+  return {
+    adminSentCount,
+    adminTotal: adminRecipients.length,
+    userWarning
+  };
 };
 
 const initFirebase = () => {
@@ -547,10 +577,14 @@ window.addEventListener('DOMContentLoaded', () => {
         await saveMessageToSharedInbox(payload);
         console.log('Message saved successfully');
 
-        await sendNotificationEmails(payload);
-        console.log('Admin and user email notifications sent.');
+        const notificationResult = await sendNotificationEmails(payload);
+        console.log('Email notification result:', notificationResult);
 
-        showFloatingNotice('Thank you for reaching out. Please wait for our reply through email or phone call.', 5000);
+        if (notificationResult.userWarning) {
+          showFloatingNotice('Message sent to admin. Confirmation email to sender may be delayed.', 5500);
+        } else {
+          showFloatingNotice('Thank you for reaching out. Please wait for our reply through email or phone call.', 5000);
+        }
         form.reset();
         if (button) {
           button.textContent = 'Message Sent';
@@ -571,13 +605,20 @@ window.addEventListener('DOMContentLoaded', () => {
           button.textContent = 'Send Message';
         }
 
-        const message = String(error?.message || '');
+        const message = getErrorText(error);
+        const normalizedMessage = message.toLowerCase();
         if (message.includes('EmailJS credentials are not configured')) {
           showFloatingNotice('Email notification is not configured yet. Please set EmailJS keys/template IDs in assets/js/main.js.', 6500);
         } else if (message.includes('EmailJS SDK not loaded')) {
           showFloatingNotice('Email notification service failed to load. Refresh page and try again.', 5500);
+        } else if (normalizedMessage.includes('domain') && normalizedMessage.includes('not allowed')) {
+          showFloatingNotice('EmailJS blocked this website domain. Add this domain in EmailJS settings, then try again.', 7000);
+        } else if (normalizedMessage.includes('template')) {
+          showFloatingNotice('Email template error. Please verify Template IDs and required template variables in EmailJS.', 7000);
+        } else if (normalizedMessage.includes('service')) {
+          showFloatingNotice('Email service error. Please verify Service ID and connected Gmail service in EmailJS.', 7000);
         } else {
-          showFloatingNotice('Something went wrong. Please try again or contact us directly.', 4000);
+          showFloatingNotice(`Something went wrong: ${message}`, 7000);
         }
       }
     });
