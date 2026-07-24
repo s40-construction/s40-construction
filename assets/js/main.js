@@ -34,7 +34,7 @@ const extractEmailsFromText = (value) => {
 
 const getAdminRecipients = (payload) => {
   const configured = extractEmailsFromText(notificationConfig.adminEmail);
-  const unique = Array.from(new Set(configured.filter(isValidEmailFormat)));
+  const unique = Array.from(new Set(configured.map(sanitizeEmailAddress).filter(isValidEmailFormat)));
   return unique.length ? unique : ['enquiry.s40@gmail.com'];
 };
 
@@ -62,6 +62,11 @@ const initEmailJs = () => {
 const isValidEmailFormat = (email) => {
   if (!email || typeof email !== 'string') return false;
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+};
+
+const sanitizeEmailAddress = (value) => {
+  if (!value || typeof value !== 'string') return '';
+  return value.trim().replace(/[<>\s]/g, '').toLowerCase();
 };
 
 const verifyEmailDomainHasMx = async (email) => {
@@ -114,8 +119,12 @@ const sendNotificationEmails = async (payload) => {
   const adminRecipients = getAdminRecipients(payload);
 
   const adminEmailJobs = adminRecipients.map((recipient) => {
+    const safeRecipient = sanitizeEmailAddress(recipient);
     const adminParams = {
-      to_email: recipient,
+      to_email: safeRecipient,
+      to: safeRecipient,
+      toEmail: safeRecipient,
+      recipient_email: safeRecipient,
       email_subject: 'New message',
       from_name: payload.name || 'Client',
       from_email: payload.email,
@@ -135,6 +144,9 @@ const sendNotificationEmails = async (payload) => {
 
   const userParams = {
     to_email: payload.email,
+    to: payload.email,
+    toEmail: payload.email,
+    recipient_email: payload.email,
     to_name: payload.name || 'Client',
     email_subject: 'Admin received your message',
     confirmation_message: 'Admin received your message. Wait for their response.',
